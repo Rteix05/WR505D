@@ -3,7 +3,7 @@
 Vitrine en ligne de la boutique fictive **ChampaShop** : projet fil rouge Nuxt 3 / Vue 3 / TypeScript.
 
 - Dépôt : https://github.com/Rteix05/WR505D
-- Site déployé : _à compléter après le branchement Vercel_
+- Site déployé : https://wr-505-d.vercel.app (Vercel, déployé automatiquement depuis `main`)
 - API : [DummyJSON](https://dummyjson.com) (produits, authentification, paniers)
 
 ## Stack
@@ -39,6 +39,14 @@ Le site est alors disponible sur http://localhost:3000.
 | `npm run test:coverage` | Tests + couverture (seuil 90 % sur `utils/promotions.ts`) |
 
 La CI (`.github/workflows/ci.yml`) exécute sur chaque PR : install, lint, format, typecheck, tests avec couverture, build.
+
+## Déploiement
+
+Le site est hébergé sur Vercel :
+
+- chaque merge dans `main` déclenche un déploiement de production ;
+- chaque PR obtient un déploiement de prévisualisation, pratique pour les reviews ;
+- l'URL publique du site (`runtimeConfig.public.siteUrl`, utilisée pour l'Open Graph) est déduite de la variable système Vercel `VERCEL_PROJECT_PRODUCTION_URL`, aucune configuration manuelle n'est nécessaire.
 
 ## Architecture
 
@@ -106,10 +114,13 @@ git push -u origin feature/14-filtres-url
 
 ## Répartition des rôles
 
-| Membre | Rôle / fonctionnalités |
-| ------ | ---------------------- |
-| Rafael | _à compléter_          |
-| _…_    | _à compléter_          |
+| Membre  | Rôle                                   | Issues (semaine 1)                                                                                                                                        |
+| ------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rafael  | Mise en place, logique métier et auth  | #13 finalisation du setup, #4 filtres et URL source de vérité, #7 moteur de promotions, #10 connexion et utilisateur SSR, #12 refresh token single-flight |
+| Radouan | Catalogue                              | #1 types DummyJSON et client API, #2 catalogue paginé, #3 recherche avec debounce, #5 filtre prix min / max                                               |
+| Marwan  | Fiche produit, panier et pages privées | #6 fiche produit, #8 store panier et cookie, #9 page panier et code promo, #11 middleware auth, compte et déconnexion                                     |
+
+Ordre conseillé : #1 (types) en premier car tout le reste en dépend, puis #7 (promotions) avant #8 et #9 (le panier appelle `computeCart`), et #10 avant #11 et #12.
 
 ## Usage de l'IA
 
