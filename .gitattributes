@@ -1,0 +1,7 @@
+# Fins de ligne LF pour tous (cohérent avec Prettier et les scripts bash)
+* text=auto eol=lf
+
+*.ico binary
+*.png binary
+*.jpg binary
+*.pdf binary
