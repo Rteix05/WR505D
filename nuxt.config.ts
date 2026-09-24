@@ -13,7 +13,10 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: 'https://dummyjson.com',
-      siteUrl: 'http://localhost:3000',
+      // Sur Vercel, VERCEL_PROJECT_PRODUCTION_URL est fourni automatiquement (sans protocole)
+      siteUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : 'http://localhost:3000',
     },
   },
 
