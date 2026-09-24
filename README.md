@@ -3,7 +3,7 @@
 Vitrine en ligne de la boutique fictive **ChampaShop** : projet fil rouge Nuxt 3 / Vue 3 / TypeScript.
 
 - Dépôt : https://github.com/Rteix05/WR505D
-- Site déployé : _à compléter après le branchement Vercel_
+- Site déployé : https://wr-505-d.vercel.app (Vercel, déployé automatiquement depuis `main`)
 - API : [DummyJSON](https://dummyjson.com) (produits, authentification, paniers)
 
 ## Stack
@@ -39,6 +39,14 @@ Le site est alors disponible sur http://localhost:3000.
 | `npm run test:coverage` | Tests + couverture (seuil 90 % sur `utils/promotions.ts`) |
 
 La CI (`.github/workflows/ci.yml`) exécute sur chaque PR : install, lint, format, typecheck, tests avec couverture, build.
+
+## Déploiement
+
+Le site est hébergé sur Vercel :
+
+- chaque merge dans `main` déclenche un déploiement de production ;
+- chaque PR obtient un déploiement de prévisualisation, pratique pour les reviews ;
+- l'URL publique du site (`runtimeConfig.public.siteUrl`, utilisée pour l'Open Graph) est déduite de la variable système Vercel `VERCEL_PROJECT_PRODUCTION_URL`, aucune configuration manuelle n'est nécessaire.
 
 ## Architecture
 
