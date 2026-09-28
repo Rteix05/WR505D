@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const { user } = useAuth()
+</script>
+
 <template>
   <div class="layout">
     <a href="#contenu" class="skip-link">Aller au contenu</a>
@@ -6,6 +10,8 @@
       <nav aria-label="Navigation principale">
         <ul class="layout__nav">
           <li><NuxtLink to="/">Accueil</NuxtLink></li>
+          <li v-if="user">Bonjour, {{ user.firstName }}</li>
+          <li v-else><NuxtLink to="/connexion">Connexion</NuxtLink></li>
         </ul>
       </nav>
     </header>
