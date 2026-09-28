@@ -59,6 +59,7 @@ stores/         stores Pinia (panier, utilisateur)
 utils/          fonctions pures TypeScript, sans Vue ni Pinia (promotions, filtres, prix)
 types/          types partagés, dont les réponses DummyJSON (types/dummyjson.ts)
 middleware/     middleware de route (auth)
+plugins/        plugins Nuxt (chargement de l'utilisateur côté serveur)
 tests/unit/     tests Vitest des fonctions pures
 docs/ai-usage/  journal d'usage de l'IA, un fichier par étudiant
 ```
@@ -77,6 +78,12 @@ docs/ai-usage/  journal d'usage de l'IA, un fichier par étudiant
 - `useSeoMeta` sur chaque page (titre, description, Open Graph).
 - Rendu serveur (SSR) : le contenu est présent dans le HTML initial.
 - `public/robots.txt` exclut les pages privées (`/compte`, `/panier`, `/connexion`).
+
+### Authentification
+
+Connexion DummyJSON, jetons en cookies, utilisateur chargé côté serveur (pas de flash de l'état déconnecté). Choix techniques (cookies, profil réduit, redirection sûre, accessibilité) dans [docs/authentification.md](docs/authentification.md).
+
+Pour tester l'expiration du jeton : `NUXT_PUBLIC_AUTH_EXPIRES_IN_MINS=1 npm run dev`.
 
 ### Filtre prix min / max
 
