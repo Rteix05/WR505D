@@ -79,7 +79,9 @@ export function promoCodeDiscount(
 
 /**
  * Règle 3 : le total des remises ne dépasse jamais 25 % du brut.
- * En cas de dépassement, c'est le code promo qui est réduit.
+ * En cas de dépassement, c'est le code promo qui est réduit, et lui seul (règle du sujet).
+ * Sans code promo, rien n'est réduit : aujourd'hui la remise beauté (10 %) ne peut pas
+ * dépasser seule le plafond, et le message ne parle que de ce qui a vraiment changé.
  */
 export function applyDiscountCap(
   discounts: AppliedDiscount[],
@@ -87,20 +89,21 @@ export function applyDiscountCap(
 ): { discounts: AppliedDiscount[]; message: string | null } {
   const capCents = percentOfCents(grossCents, DISCOUNT_CAP_PERCENT)
   const excessCents = sumDiscounts(discounts) - capCents
-  if (excessCents <= 0) return { discounts, message: null }
+  const promo = discounts.find((discount) => discount.id === 'TROYES10')
+  if (excessCents <= 0 || !promo) return { discounts, message: null }
 
-  let reducedCents = 0
+  const reducedCents = Math.max(0, promo.amountCents - excessCents)
   const capped = discounts
-    .map((discount) => {
-      if (discount.id !== 'TROYES10') return discount
-      reducedCents = Math.max(0, discount.amountCents - excessCents)
-      return { ...discount, amountCents: reducedCents }
-    })
+    .map((discount) => (discount === promo ? { ...discount, amountCents: reducedCents } : discount))
     .filter((discount) => discount.amountCents > 0)
 
+  const reason = `les remises ne peuvent pas dépasser ${DISCOUNT_CAP_PERCENT} % du montant brut`
   return {
     discounts: capped,
-    message: `Le code ${PROMO_CODE} est limité à ${formatCents(reducedCents)} : les remises ne peuvent pas dépasser ${DISCOUNT_CAP_PERCENT} % du montant brut.`,
+    message:
+      reducedCents > 0
+        ? `Le code ${PROMO_CODE} est limité à ${formatCents(reducedCents)} : ${reason}.`
+        : `Le code ${PROMO_CODE} ne s'applique pas : ${reason}.`,
   }
 }
 
