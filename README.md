@@ -78,6 +78,10 @@ docs/ai-usage/  journal d'usage de l'IA, un fichier par étudiant
 - Rendu serveur (SSR) : le contenu est présent dans le HTML initial.
 - `public/robots.txt` exclut les pages privées (`/compte`, `/panier`, `/connexion`).
 
+### URL du catalogue
+
+Page, recherche, catégorie, tri et prix sont dans les query params, lus et écrits par les fonctions pures de `utils/catalogQuery.ts`. Noms des paramètres et règles de validation dans [docs/catalogue-url.md](docs/catalogue-url.md).
+
 ### Filtre prix min / max
 
 _À compléter dans l'issue dédiée : stratégie retenue, nombre d'appels, performance, impact sur la pagination._
