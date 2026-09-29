@@ -107,6 +107,26 @@ describe('parseCatalogQuery', () => {
     expect(parseCatalogQuery({ minPrice }).minPrice).toBe(expected)
   })
 
+  it('menu de tri du formulaire sans JavaScript (?sort=) : prioritaire sur sortBy / order', () => {
+    expect(parseCatalogQuery({ sort: 'rating-desc' })).toMatchObject({
+      sortBy: 'rating',
+      order: 'desc',
+    })
+    expect(parseCatalogQuery({ sort: 'relevance', sortBy: 'price' })).toMatchObject({
+      sortBy: null,
+    })
+    expect(parseCatalogQuery({ sort: 'inconnu', sortBy: 'title' })).toMatchObject({
+      sortBy: 'title',
+    })
+  })
+
+  it('toCatalogQuery n’écrit jamais ?sort= : une seule URL par tri', () => {
+    expect(toCatalogQuery(parseCatalogQuery({ sort: 'price-desc' }))).toEqual({
+      sortBy: 'price',
+      order: 'desc',
+    })
+  })
+
   it('bornes de prix inversées : remises dans l’ordre', () => {
     expect(parseCatalogQuery({ minPrice: '50', maxPrice: '10' })).toMatchObject({
       minPrice: 10,

@@ -7,6 +7,12 @@ import type {
 } from '../types/catalog'
 
 export const CATALOG_PAGE_SIZE = 12
+/**
+ * Paramètre envoyé par le menu de tri du formulaire quand JavaScript est désactivé
+ * (`?sort=price-desc`). Lu par `parseCatalogQuery`, jamais écrit par `toCatalogQuery` :
+ * la page redirige vers l'URL canonique (`sortBy` + `order`).
+ */
+export const SORT_FORM_PARAM = 'sort'
 export const SEARCH_MAX_LENGTH = 100
 
 const SORT_FIELDS: readonly SortField[] = ['price', 'rating', 'title']
@@ -83,8 +89,17 @@ function parseCategory(value: string | undefined): string | null {
 
 /** Lit les filtres depuis `route.query`. Toujours un résultat valide. */
 export function parseCatalogQuery(query: Record<string, unknown>): CatalogFilters {
-  const sortBy = firstString(query.sortBy)
-  const order = firstString(query.order)
+  const sortByParam = firstString(query.sortBy)
+  const orderParam = firstString(query.order)
+  const urlSort = {
+    sortBy: isOneOf(sortByParam, SORT_FIELDS) ? sortByParam : null,
+    order: isOneOf(orderParam, SORT_ORDERS) ? orderParam : DEFAULT_FILTERS.order,
+  }
+  // Une option du menu (formulaire sans JavaScript) l'emporte sur sortBy / order.
+  const formSort = SORT_OPTIONS.find(
+    (option) => option.value === firstString(query[SORT_FORM_PARAM]),
+  )
+  const { sortBy, order } = formSort ?? urlSort
   let minPrice = parsePrice(firstString(query.minPrice))
   let maxPrice = parsePrice(firstString(query.maxPrice))
 
@@ -97,8 +112,8 @@ export function parseCatalogQuery(query: Record<string, unknown>): CatalogFilter
     page: parsePage(firstString(query.page)),
     q: parseSearch(firstString(query.q)),
     category: parseCategory(firstString(query.category)),
-    sortBy: isOneOf(sortBy, SORT_FIELDS) ? sortBy : null,
-    order: isOneOf(order, SORT_ORDERS) ? order : DEFAULT_FILTERS.order,
+    sortBy,
+    order,
     minPrice,
     maxPrice,
   }
