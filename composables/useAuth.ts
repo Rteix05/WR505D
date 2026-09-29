@@ -1,5 +1,5 @@
 import type { ComputedRef } from 'vue'
-import type { AuthUser, LoginCredentials, LoginResponse, MeResponse } from '~/types/auth'
+import type { AuthUser, LoginCredentials, LoginResponse, User } from '~/types/dummyjson'
 
 export interface UseAuth {
   user: ComputedRef<AuthUser | null>
@@ -35,7 +35,7 @@ export function useAuth(): UseAuth {
       return
     }
     try {
-      const me = await $authFetch<MeResponse>('/auth/me')
+      const me = await $authFetch<User>('/auth/me')
       store.setUser(toAuthUser(me))
     } catch {
       // Session expirée (cookies déjà vidés par $authFetch) ou API injoignable.
