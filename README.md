@@ -78,6 +78,10 @@ docs/ai-usage/  journal d'usage de l'IA, un fichier par étudiant
 - Rendu serveur (SSR) : le contenu est présent dans le HTML initial.
 - `public/robots.txt` exclut les pages privées (`/compte`, `/panier`, `/connexion`).
 
+### Moteur de promotions
+
+Fonction pure `computeCart` dans `utils/promotions.ts`, montants en centimes entiers. Choix techniques détaillés (arrondi, ordre des règles, plafond, cas limites) dans [docs/promotions.md](docs/promotions.md).
+
 ### Filtre prix min / max
 
 _À compléter dans l'issue dédiée : stratégie retenue, nombre d'appels, performance, impact sur la pagination._
