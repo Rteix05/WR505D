@@ -83,6 +83,10 @@ docs/ai-usage/  journal d'usage de l'IA, un fichier par étudiant
 
 Réponses DummyJSON typées dans `types/dummyjson.ts` à partir des réponses réelles. Routes publiques via `useApi()`, routes authentifiées via `$authFetch`, URL de base dans `runtimeConfig.public.apiBase`. Choix détaillés dans [docs/client-api.md](docs/client-api.md).
 
+### Catalogue
+
+`/produits` : 12 produits par page, page courante dans l'URL (`?page=`), rendu serveur (fonctionne sans JavaScript), squelettes, erreur avec « Réessayer ». Choix détaillés dans [docs/catalogue.md](docs/catalogue.md).
+
 ### Moteur de promotions
 
 Fonction pure `computeCart` dans `utils/promotions.ts`, montants en centimes entiers. Choix techniques détaillés (arrondi, ordre des règles, plafond, cas limites) dans [docs/promotions.md](docs/promotions.md).
