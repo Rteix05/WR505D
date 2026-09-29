@@ -1,6 +1,6 @@
 # L'URL, source de vérité du catalogue : choix techniques
 
-Issue #4 (partie pure). Fichiers : `types/catalog.ts`, `utils/catalogQuery.ts`, `tests/unit/catalogQuery.spec.ts`. La page `/produits` (#2) branchera ces fonctions.
+Issue #4. Fichiers : `types/catalog.ts`, `utils/catalogQuery.ts`, `components/CatalogToolbar.vue`, `pages/produits/index.vue`, `tests/unit/catalogQuery.spec.ts`, `tests/nuxt/CatalogToolbar.spec.ts`.
 
 ## 1. Le principe
 
@@ -87,10 +87,49 @@ La combinaison recherche + catégorie + prix (DummyJSON ne sait pas filtrer une 
 
 ## 8. Tests
 
-50 tests dans `tests/unit/catalogQuery.spec.ts` : lecture d'une URL complète, chaque cas du tableau de la section 3, ordre des clés, aller-retour, retour à la page 1, menu de tri, pagination (194 produits → 17 pages). Couverture : 100 % des lignes.
+52 tests dans `tests/unit/catalogQuery.spec.ts` : lecture d'une URL complète, chaque cas du tableau de la section 3, ordre des clés, aller-retour, retour à la page 1, menu de tri, pagination (194 produits → 17 pages). Couverture : 100 % des lignes.
 
-## 9. Reste à faire (après #1 et #2)
+## 9. Le formulaire de filtres (`CatalogToolbar`)
 
-- Liste des catégories chargée depuis `/products/categories`.
-- Dans `/produits` : `<select>` de catégorie et de tri avec labels, lecture de `route.query`, `navigateTo({ query: toCatalogQuery(...) })` à chaque changement.
-- Vérifier rechargement, bouton retour, lien partagé et rendu sans JavaScript.
+Deux menus (catégorie, tri) et un bouton « Appliquer », dans un vrai `<form method="get" action="/produits">`.
+
+**Pourquoi un bouton plutôt qu'un changement immédiat.** Changer de page dès qu'on choisit une option est déroutant : au clavier, les flèches parcourent les options d'un `<select>`, et chaque flèche rechargerait le catalogue ; un lecteur d'écran perdrait le fil. Le critère WCAG 3.2.2 (« Changement de contexte à la saisie ») demande de l'éviter. On choisit, puis on valide.
+
+**Pourquoi un vrai formulaire.** Le sujet demande de tester le catalogue sans JavaScript. Sans JavaScript, le navigateur envoie le formulaire lui-même :
+
+```
+/produits?category=beauty&sort=rating-desc
+```
+
+Le menu de tri envoie une seule valeur (`sort=rating-desc`), qui ne correspond pas à l'URL canonique (`sortBy=rating&order=desc`). `parseCatalogQuery` lit `sort` en priorité, puis la page redirige côté serveur vers l'URL canonique (302) :
+
+```
+/produits?category=beauty&sortBy=rating&order=desc
+```
+
+`toCatalogQuery` n'écrit jamais `sort` : une seule URL par vue reste la règle. La recherche (#3) et les prix (#5) sont renvoyés en champs cachés, pour ne pas être perdus.
+
+**Avec JavaScript**, `@submit.prevent` intercepte l'envoi : le composant émet `apply` avec les nouveaux filtres, la page calcule `updateFilters` (retour page 1) puis `navigateTo({ query: toCatalogQuery(...) })`. L'URL change, la page se recalcule, pas de rechargement.
+
+**Le composant ne possède pas l'état.** Ses menus sont initialisés depuis `filters` (props, lus dans l'URL) et resynchronisés quand l'URL change sans lui (bouton retour, lien de pagination). Il n'appelle ni le routeur ni l'API : il émet un événement, la page décide (composant d'affichage, responsabilité unique).
+
+« Effacer les filtres » n'apparaît que si un filtre ou un tri est actif ; c'est un simple lien vers `/produits`.
+
+## 10. La page `/produits`
+
+- `filters = computed(() => parseCatalogQuery(route.query))` remplace `pageFromQuery` de #2 (prévu par Radouan dans sa PR).
+- Appel API : `getProductsByCategory(slug, …)` si une catégorie est choisie, sinon `getProducts(…)`, avec `paginationParams` et `sortParams`. Vérifié sur l'API réelle : le tri et la pagination fonctionnent aussi dans une catégorie (Smartphones, 16 produits, page 2 = 4 produits).
+- `useAsyncData` surveille `filters` : tout changement de l'URL relance la requête, côté serveur au premier affichage, côté client ensuite.
+- Liste des catégories : `GET /products/categories` (24 catégories), chargée une fois.
+- Catégorie inconnue (`?category=inconnue`) : l'API répond 0 produit sans erreur ; la page affiche « Aucun produit dans cette catégorie » et un lien vers tous les produits.
+- Titre et canonical suivent les filtres : « Produits : Beauty, page 2 », canonical = l'URL canonique complète.
+- Statut annoncé (`role="status"`) : « 5 produits dans Beauty, page 1 sur 1 ».
+
+Le typage du client a été resserré au passage (suggestion de la review de #23) : `ProductListParams.sortBy` est un `SortField` (`price`, `rating`, `title`) et non plus `keyof Product`, qui acceptait `reviews` ou `images`.
+
+## 11. Vérifications
+
+- Unitaires : 52 tests sur `utils/catalogQuery.ts` (dont le paramètre `sort` du formulaire).
+- Composant (`tests/nuxt/CatalogToolbar.spec.ts`, environnement Nuxt) : menus pré-remplis depuis l'URL, labels reliés, rien n'est émis au choix d'une option, « Appliquer » émet les bons filtres, resynchronisation au retour arrière, lien « Effacer » conditionnel, formulaire GET avec champs cachés.
+- Rendu serveur, sans JavaScript (`curl`) : `?category=beauty` (5 produits), `?category=beauty&sortBy=price&order=desc` (premier produit à 19,99 €, menus pré-sélectionnés), `?sortBy=title&order=asc&page=2`, `?category=smartphones&page=2`, `?category=inconnue`, formulaire `?category=beauty&sort=rating-desc` → 302 vers l'URL canonique, `?category=&sort=relevance` → 302 vers `/produits`.
+- Non vérifié dans un navigateur réel (extension indisponible) : le parcours clavier complet et le bouton retour, à faire avant de passer la PR en « Ready for review ».
