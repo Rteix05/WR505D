@@ -5,7 +5,7 @@ import {
   type AuthFetchDeps,
   type AuthFetchOptions,
 } from '../../utils/authFetch'
-import type { AuthTokens } from '../../types/auth'
+import type { AuthTokens } from '../../types/dummyjson'
 
 /** Laisse les autres promesses en attente avancer (simule la latence réseau). */
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0))
