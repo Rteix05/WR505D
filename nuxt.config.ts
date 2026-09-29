@@ -13,6 +13,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: 'https://dummyjson.com',
+      // Durée de vie de l'accessToken. Surcharge : NUXT_PUBLIC_AUTH_EXPIRES_IN_MINS=1
+      authExpiresInMins: 30,
       // Sur Vercel, VERCEL_PROJECT_PRODUCTION_URL est fourni automatiquement (sans protocole)
       siteUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL
         ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
