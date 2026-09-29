@@ -79,6 +79,10 @@ docs/ai-usage/  journal d'usage de l'IA, un fichier par étudiant
 - Rendu serveur (SSR) : le contenu est présent dans le HTML initial.
 - `public/robots.txt` exclut les pages privées (`/compte`, `/panier`, `/connexion`).
 
+### Types et client API
+
+Réponses DummyJSON typées dans `types/dummyjson.ts` à partir des réponses réelles. Routes publiques via `useApi()`, routes authentifiées via `$authFetch`, URL de base dans `runtimeConfig.public.apiBase`. Choix détaillés dans [docs/client-api.md](docs/client-api.md).
+
 ### Moteur de promotions
 
 Fonction pure `computeCart` dans `utils/promotions.ts`, montants en centimes entiers. Choix techniques détaillés (arrondi, ordre des règles, plafond, cas limites) dans [docs/promotions.md](docs/promotions.md).
