@@ -79,6 +79,10 @@ docs/ai-usage/  journal d'usage de l'IA, un fichier par étudiant
 - Rendu serveur (SSR) : le contenu est présent dans le HTML initial.
 - `public/robots.txt` exclut les pages privées (`/compte`, `/panier`, `/connexion`).
 
+### Moteur de promotions
+
+Fonction pure `computeCart` dans `utils/promotions.ts`, montants en centimes entiers. Choix techniques détaillés (arrondi, ordre des règles, plafond, cas limites) dans [docs/promotions.md](docs/promotions.md).
+
 ### Authentification
 
 Connexion DummyJSON, jetons en cookies, utilisateur chargé côté serveur (pas de flash de l'état déconnecté). Choix techniques (cookies, profil réduit, redirection sûre, accessibilité) dans [docs/authentification.md](docs/authentification.md).
