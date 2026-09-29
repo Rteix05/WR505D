@@ -91,6 +91,10 @@ Les appels authentifiés passent par `$authFetch` : sur une 401, le jeton est ra
 
 Pour tester l'expiration du jeton : `NUXT_PUBLIC_AUTH_EXPIRES_IN_MINS=1 npm run dev`.
 
+### Panier
+
+Store Pinia `cart` persisté dans un cookie (présent dès le rendu serveur, moins de 4 Ko), limite de stock expliquée à l'utilisateur, récapitulatif calculé par `computeCart`. Choix techniques (format du cookie, validation, stock) dans [docs/panier.md](docs/panier.md).
+
 ### Filtre prix min / max
 
 _À compléter dans l'issue dédiée : stratégie retenue, nombre d'appels, performance, impact sur la pagination._
