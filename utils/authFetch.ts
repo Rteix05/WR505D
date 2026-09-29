@@ -1,4 +1,4 @@
-import type { AuthTokens } from '../types/auth'
+import type { AuthTokens } from '../types/dummyjson'
 import { httpStatusOf } from './auth'
 import { createSingleFlight } from './singleFlight'
 

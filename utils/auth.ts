@@ -1,4 +1,4 @@
-import type { AuthUser, DummyUserProfile } from '../types/auth'
+import type { AuthUser, DummyUserProfile } from '../types/dummyjson'
 
 export const ACCESS_TOKEN_COOKIE = 'accessToken'
 export const REFRESH_TOKEN_COOKIE = 'refreshToken'

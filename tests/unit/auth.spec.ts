@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { httpStatusOf, loginErrorMessage, safeRedirect, toAuthUser } from '../../utils/auth'
-import type { MeResponse } from '../../types/auth'
+import type { User } from '../../types/dummyjson'
 
 describe('toAuthUser', () => {
   it('ne garde que les champs utiles, jamais les données sensibles', () => {
@@ -20,7 +20,7 @@ describe('toAuthUser', () => {
       // Champs réellement renvoyés par /auth/me mais absents du type
       password: 'emilyspass',
       bank: { cardNumber: '3693233511855044' },
-    } satisfies MeResponse & Record<string, unknown>
+    } satisfies User & Record<string, unknown>
 
     expect(toAuthUser(me)).toEqual({
       id: 1,
