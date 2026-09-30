@@ -11,7 +11,7 @@ const { user } = useAuth()
         <ul class="layout__nav">
           <li><NuxtLink to="/">Accueil</NuxtLink></li>
           <li><NuxtLink to="/produits">Produits</NuxtLink></li>
-          <li v-if="user">Bonjour, {{ user.firstName }}</li>
+          <li v-if="user"><NuxtLink to="/compte">Mon compte</NuxtLink></li>
           <li v-else><NuxtLink to="/connexion">Connexion</NuxtLink></li>
         </ul>
       </nav>
