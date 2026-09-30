@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { CartItem, CartProduct } from '~/types/cart'
+import type { CartItem, CartProduct, CartProductDetails } from '~/types/cart'
 import type { CartSummary } from '~/types/promotions'
 
 export const useCartStore = defineStore('cart', () => {
@@ -47,6 +47,14 @@ export const useCartStore = defineStore('cart', () => {
     persist()
   }
 
+  /** Resynchronise prix et stock avec l'API ; renvoie une explication par ligne modifiée. */
+  function sync(products: CartProductDetails[]): string[] {
+    const result = syncCartWithProducts(items.value, products)
+    items.value = result.items
+    persist()
+    return result.messages
+  }
+
   function setPromoCode(code: string): void {
     promoCode.value = normalizePromoCode(code)
     persist()
@@ -67,6 +75,7 @@ export const useCartStore = defineStore('cart', () => {
     add,
     setQuantity,
     remove,
+    sync,
     setPromoCode,
     clear,
   }
