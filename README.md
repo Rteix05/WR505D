@@ -25,20 +25,23 @@ Le site est alors disponible sur http://localhost:3000.
 
 ## Scripts
 
-| Script                  | Rôle                                                      |
-| ----------------------- | --------------------------------------------------------- |
-| `npm run dev`           | Serveur de développement                                  |
-| `npm run build`         | Build de production                                       |
-| `npm run preview`       | Prévisualise le build de production                       |
-| `npm run lint`          | ESLint (règle `no-explicit-any` en erreur)                |
-| `npm run lint:fix`      | ESLint avec correction automatique                        |
-| `npm run format`        | Formate le code avec Prettier                             |
-| `npm run format:check`  | Vérifie le formatage (utilisé par la CI)                  |
-| `npm run typecheck`     | Vérification TypeScript (`nuxt typecheck`)                |
-| `npm run test`          | Tests Vitest                                              |
-| `npm run test:coverage` | Tests + couverture (seuil 90 % sur `utils/promotions.ts`) |
+| Script                  | Rôle                                                                                     |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| `npm run dev`           | Serveur de développement                                                                 |
+| `npm run build`         | Build de production                                                                      |
+| `npm run preview`       | Prévisualise le build de production                                                      |
+| `npm run lint`          | ESLint (règle `no-explicit-any` en erreur)                                               |
+| `npm run lint:fix`      | ESLint avec correction automatique                                                       |
+| `npm run format`        | Formate le code avec Prettier                                                            |
+| `npm run format:check`  | Vérifie le formatage (utilisé par la CI)                                                 |
+| `npm run typecheck`     | Vérification TypeScript (`nuxt typecheck`)                                               |
+| `npm run test`          | Tests Vitest                                                                             |
+| `npm run test:coverage` | Tests + couverture (seuil 90 % sur `utils/promotions.ts`)                                |
+| `npm run test:e2e`      | Parcours Playwright sur le build de production (catalogue, connexion, accessibilité axe) |
 
-La CI (`.github/workflows/ci.yml`) exécute sur chaque PR : install, lint, format, typecheck, tests avec couverture, build.
+La CI (`.github/workflows/ci.yml`) exécute sur chaque PR : install, lint, format, typecheck, tests avec couverture, build, puis un second job lance les parcours Playwright (rapport HTML en artefact).
+
+Première utilisation de Playwright en local : `npx playwright install chromium`.
 
 ## Déploiement
 
