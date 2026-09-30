@@ -52,3 +52,18 @@ export function loginErrorMessage(error: unknown): string {
   }
   return 'Le service de connexion est indisponible. Réessayez dans quelques instants.'
 }
+
+/** Destination du middleware `auth` : la connexion, avec la page demandée en `?redirect=`. */
+export interface LoginRedirectLocation {
+  path: string
+  query: { redirect: string }
+}
+
+/**
+ * `target` = `to.fullPath` : query et hash compris, pour revenir exactement au même endroit
+ * (ex. `/compte?onglet=commandes`). On passe un objet et non une chaîne : vue-router encode
+ * lui-même la query, pas de double encodage ni de `&` qui casserait le paramètre.
+ */
+export function loginRedirectLocation(target: string): LoginRedirectLocation {
+  return { path: LOGIN_PATH, query: { redirect: target } }
+}
