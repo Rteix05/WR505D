@@ -152,6 +152,19 @@ Onglet « Files changed » : commenter les lignes (pourquoi ce choix ? cas limit
 
 - `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm run test:coverage`, `npm run build` : tout vert.
 - Tester dans le vrai site (`npm run dev`) ce qui peut l'être ; dire clairement ce qui n'a pas été testé.
+- Une page ou un parcours ajouté ou modifié : ajouter ou adapter son parcours Playwright, puis `npm run test:e2e` (voir ci-dessous).
+
+## Tests de bout en bout (Playwright)
+
+Barème : « parcours complet vert en CI ». Le job « E2E Playwright » de la CI lance tous les fichiers de `e2e/` sur le build de production.
+
+- Lancer en local : `npx playwright install chromium` (une seule fois), puis `npm run test:e2e`. Le build est refait automatiquement ; rapport HTML dans `playwright-report/` (`npx playwright show-report`).
+- Un fichier par fonctionnalité : `e2e/<fonctionnalite>.spec.ts` (existants : `catalogue`, `connexion`, `accessibilite`).
+- Trouver les éléments comme un utilisateur : `getByRole`, `getByLabel`, `getByText`, jamais par classe CSS. Un test qui ne trouve pas un bouton par son rôle signale souvent un problème d'accessibilité.
+- `{ exact: true }` quand un nom en contient un autre (« Page 1 » / « Page 17 ») ; restreindre au `<main>` pour `role="alert"` (Nuxt en ajoute un pour annoncer les changements de page).
+- Couvrir : le parcours normal, le clavier (`focus()` + `keyboard.press('Enter')`), le bouton retour (`page.goBack()`), une URL invalide, et le rendu sans JavaScript (`test.use({ javaScriptEnabled: false })`).
+- Accessibilité : ajouter chaque nouvelle page au tableau `PAGES` de `e2e/accessibilite.spec.ts` (axe-core, WCAG 2.1 AA, zéro violation).
+- Compte de démonstration pour les parcours connectés : `emilys` / `emilyspass` (public, donné par le sujet).
 
 ## Justification (chaque étudiant explique son code à l'oral)
 
