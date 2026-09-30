@@ -102,6 +102,10 @@ Les appels authentifiés passent par `$authFetch` : sur une 401, le jeton est ra
 
 Pour tester l'expiration du jeton : `NUXT_PUBLIC_AUTH_EXPIRES_IN_MINS=1 npm run dev`.
 
+### URL du catalogue
+
+Page, recherche, catégorie, tri et prix sont dans les query params, lus et écrits par les fonctions pures de `utils/catalogQuery.ts`. Noms des paramètres et règles de validation dans [docs/catalogue-url.md](docs/catalogue-url.md).
+
 ### Filtre prix min / max
 
 _À compléter dans l'issue dédiée : stratégie retenue, nombre d'appels, performance, impact sur la pagination._

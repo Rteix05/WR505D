@@ -2,18 +2,6 @@
 export type PaginationItem = number | 'ellipsis'
 
 /**
- * Lit `?page=` : entier ≥ 1 écrit en chiffres, sinon 1. Une URL modifiée à la main
- * (`?page=abc`, `?page=-2`, `?page=1.5`) ne doit jamais faire planter la page.
- * À remplacer par `parseCatalogQuery` (#4) une fois mergée.
- */
-export function pageFromQuery(value: unknown): number {
-  const first = Array.isArray(value) ? value[0] : value
-  if (typeof first !== 'string' || !/^\d+$/.test(first)) return 1
-  const page = Number(first)
-  return Number.isSafeInteger(page) && page >= 1 ? page : 1
-}
-
-/**
  * Pages à afficher : la première, la dernière, la courante et ses voisines,
  * les trous remplacés par une ellipse. 17 pages, page 9 → 1 … 8 9 10 … 17.
  * Une ellipse ne cache jamais une seule page : on affiche la page elle-même,

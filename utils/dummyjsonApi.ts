@@ -1,3 +1,4 @@
+import type { SortField, SortOrder } from '../types/catalog'
 import type { Category, Product, ProductsResponse } from '../types/dummyjson'
 
 export interface ApiRequestOptions {
@@ -12,8 +13,9 @@ export type ApiRequest = <T>(url: string, options?: ApiRequestOptions) => Promis
 export interface ProductListParams {
   limit?: number
   skip?: number
-  sortBy?: keyof Product
-  order?: 'asc' | 'desc'
+  /** Seuls champs triables proposés à l'utilisateur (`keyof Product` acceptait `reviews`, `images`…). */
+  sortBy?: SortField
+  order?: SortOrder
   signal?: AbortSignal
 }
 

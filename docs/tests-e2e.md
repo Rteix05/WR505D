@@ -39,11 +39,12 @@ Deux pièges rencontrés, notés dans `CLAUDE.md` :
 
 ## 5. Parcours couverts
 
-| Fichier                 | Parcours                                                                                                                                                                                             |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `catalogue.spec.ts`     | 12 produits avec prix et note ; page suivante puis bouton retour ; clavier (Entrée sur « Suivante », focus sur le titre) ; `?page=abc` ; page hors bornes ; sans JavaScript (liste et pagination)    |
-| `connexion.spec.ts`     | Formulaire vide (focus, `aria-invalid`, description accessible) ; mauvais mot de passe ; connexion puis page sans JavaScript avec les mêmes cookies (pas de flash) ; `?redirect=` interne et externe |
-| `accessibilite.spec.ts` | axe-core, WCAG 2.1 A et AA, sur `/`, `/produits`, `/produits?page=2`, `/connexion` : zéro violation                                                                                                  |
+| Fichier                 | Parcours                                                                                                                                                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `catalogue.spec.ts`     | 12 produits avec prix et note ; page suivante puis bouton retour ; clavier (Entrée sur « Suivante », focus sur le titre) ; `?page=abc` ; page hors bornes ; sans JavaScript (liste et pagination)                                     |
+| `connexion.spec.ts`     | Formulaire vide (focus, `aria-invalid`, description accessible) ; mauvais mot de passe ; connexion puis page sans JavaScript avec les mêmes cookies (pas de flash) ; `?redirect=` interne et externe                                  |
+| `filtres.spec.ts`       | Catégorie + tri (ordre des prix vérifié) ; rien avant « Appliquer » ; Entrée au clavier ; bouton retour ; retour page 1 ; « Effacer les filtres » ; catégorie inconnue ; formulaire **sans JavaScript** redirigé vers l'URL canonique |
+| `accessibilite.spec.ts` | axe-core, WCAG 2.1 A et AA, sur `/`, `/produits`, `/produits?page=2`, `/produits?category=beauty&sortBy=price&order=desc`, `/connexion` : zéro violation                                                                              |
 
 **Pas de flash, vérifié sans ambiguïté** : après la connexion, on ouvre un second contexte avec les mêmes cookies et **JavaScript désactivé**. Seul le HTML du serveur s'affiche : s'il contient « Bonjour, Emily » et aucun lien « Connexion », l'état connecté est bien rendu côté serveur.
 

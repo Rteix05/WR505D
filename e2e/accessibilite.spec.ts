@@ -4,7 +4,13 @@ import { expect, test } from '@playwright/test'
 // Contrôle automatique WCAG 2.1 AA avec axe-core (le moteur de l'audit accessibilité
 // de Lighthouse). Il ne remplace pas un test au clavier, mais bloque les régressions
 // détectables : contraste, labels, noms accessibles, structure des titres…
-const PAGES = ['/', '/produits', '/produits?page=2', '/connexion']
+const PAGES = [
+  '/',
+  '/produits',
+  '/produits?page=2',
+  '/produits?category=beauty&sortBy=price&order=desc',
+  '/connexion',
+]
 
 for (const path of PAGES) {
   test(`aucune violation d'accessibilité sur ${path}`, async ({ page }) => {

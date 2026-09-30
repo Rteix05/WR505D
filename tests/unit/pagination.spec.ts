@@ -1,23 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { pageFromQuery, paginationItems } from '../../utils/pagination'
-
-describe('pageFromQuery', () => {
-  it('lit un entier positif', () => {
-    expect(pageFromQuery('1')).toBe(1)
-    expect(pageFromQuery('17')).toBe(17)
-  })
-
-  it('garde la première valeur si le paramètre est répété', () => {
-    expect(pageFromQuery(['3', '5'])).toBe(3)
-  })
-
-  it.each([undefined, null, '', 'abc', '0', '-2', '1.5', '1e3', ' 2', '99999999999999999999'])(
-    'revient à la page 1 pour %j',
-    (value) => {
-      expect(pageFromQuery(value)).toBe(1)
-    },
-  )
-})
+import { paginationItems } from '../../utils/pagination'
 
 describe('paginationItems', () => {
   it('affiche tout quand il y a peu de pages', () => {
