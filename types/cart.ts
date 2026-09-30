@@ -45,3 +45,15 @@ export interface CartState {
   items: CartItem[]
   promoCode: string
 }
+
+/** Produit rechargé par la page panier : de quoi afficher la ligne et resynchroniser prix et stock. */
+export interface CartProductDetails extends CartProduct {
+  title: string
+  thumbnail: string
+}
+
+/** Résultat de la resynchronisation avec l'API : une explication par ligne modifiée. */
+export interface CartSyncResult {
+  items: CartItem[]
+  messages: string[]
+}

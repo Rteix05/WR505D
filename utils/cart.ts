@@ -1,6 +1,14 @@
 import type { CartLine } from '../types/promotions'
-import type { CartCookie, CartItem, CartProduct, CartState, CartUpdate } from '../types/cart'
-import { toCents } from './price'
+import type {
+  CartCookie,
+  CartItem,
+  CartProduct,
+  CartProductDetails,
+  CartState,
+  CartSyncResult,
+  CartUpdate,
+} from '../types/cart'
+import { formatCents, toCents } from './price'
 
 export const CART_COOKIE = 'cart'
 export const CART_COOKIE_MAX_AGE_SECONDS = 30 * 24 * 60 * 60
@@ -91,6 +99,52 @@ export function updateCartQuantity(
 
 export function removeFromCart(items: CartItem[], productId: number): CartItem[] {
   return items.filter((item) => item.productId !== productId)
+}
+
+/**
+ * Met les lignes à jour avec les produits rechargés depuis l'API (prix, stock, catégorie).
+ * Le cookie peut dater de plusieurs jours : on prévient l'utilisateur de chaque changement.
+ * Un produit absent de `products` (API injoignable, produit supprimé) garde sa ligne telle quelle.
+ */
+export function syncCartWithProducts(
+  items: CartItem[],
+  products: CartProductDetails[],
+): CartSyncResult {
+  const messages: string[] = []
+  const synced: CartItem[] = []
+
+  for (const item of items) {
+    const product = products.find((candidate) => candidate.id === item.productId)
+    if (!product) {
+      synced.push(item)
+      continue
+    }
+    if (product.stock <= 0) {
+      messages.push(`« ${product.title} » n'est plus en stock : il a été retiré du panier.`)
+      continue
+    }
+
+    const unitPriceCents = toCents(product.price)
+    if (unitPriceCents !== item.unitPriceCents) {
+      messages.push(
+        `Le prix de « ${product.title} » a changé : ${formatCents(item.unitPriceCents)} → ${formatCents(unitPriceCents)}.`,
+      )
+    }
+    if (item.quantity > product.stock) {
+      messages.push(
+        `Il ne reste que ${copies(product.stock)} de « ${product.title} » : la quantité a été ajustée.`,
+      )
+    }
+    synced.push({
+      productId: item.productId,
+      quantity: Math.min(item.quantity, product.stock),
+      unitPriceCents,
+      category: product.category,
+      stock: product.stock,
+    })
+  }
+
+  return { items: synced, messages }
 }
 
 /** Nombre total d'articles (quantités cumulées), pour le badge de l'en-tête. */
