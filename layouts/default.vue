@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const { user } = useAuth()
+const cart = useCartStore()
 </script>
 
 <template>
@@ -14,6 +15,13 @@ const { user } = useAuth()
           <li v-else><NuxtLink to="/connexion">Connexion</NuxtLink></li>
         </ul>
       </nav>
+      <NuxtLink
+        to="/panier"
+        class="layout__cart"
+        :aria-label="`Panier, ${cart.itemCount} article${cart.itemCount > 1 ? 's' : ''}`"
+      >
+        Panier ({{ cart.itemCount }})
+      </NuxtLink>
     </header>
     <main id="contenu" class="layout__main">
       <slot />
@@ -43,6 +51,9 @@ const { user } = useAuth()
   font-size: 1.25rem;
   text-decoration: none;
   color: inherit;
+}
+.layout__cart {
+  font-weight: 600;
 }
 .layout__nav {
   display: flex;
