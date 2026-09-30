@@ -87,6 +87,8 @@ Il faut la CI verte et 1 approbation : on ne peut pas merger sa propre PR sans.
 
 ### 5. Corriger après une review
 
+Lire **tous** les commentaires : le message de review, les commentaires sur les lignes (onglet « Files changed ») et ceux de la conversation. Pour chaque point : corriger, ou répondre pourquoi on garde le code tel quel. Rien ne reste sans réponse, même les remarques « non bloquantes ».
+
 Rester sur sa branche, modifier, puis :
 
 ```bash
@@ -94,6 +96,8 @@ git add .
 git commit -m "fix: <ce qui a été corrigé>"
 git push              # la PR se met à jour toute seule
 ```
+
+Puis répondre sous chaque commentaire (« Corrigé dans <commit> » ou l'explication). Si la PR a déjà été mergée avec des remarques non bloquantes, les traiter dans une issue de suivi (ex. #25).
 
 ### 6. « This branch has conflicts »
 
@@ -167,6 +171,20 @@ Barème : « parcours complet vert en CI ». Le job « E2E Playwright » de la C
 - Écrire `docs/<sujet>.md` : chaque choix et sa raison, les alternatives rejetées, les cas limites, un exemple chiffré ou un schéma, la stratégie de tests. Lien depuis le README.
 - Ajouter une ligne dans `docs/ai-usage/<prenom>.md` ; laisser la colonne « gardé / modifié / rejeté » à compléter par l'étudiant.
 
+## Commentaires de review (à faire systématiquement)
+
+- Avant de reprendre une issue, et quand l'étudiant signale une review : lire tous les commentaires de ses PR, y compris celles déjà mergées :
+  ```bash
+  gh api repos/Rteix05/WR505D/pulls/<n°>/reviews --jq '.[] | select(.body != "") | .body'
+  gh api repos/Rteix05/WR505D/pulls/<n°>/comments --jq '.[] | "\(.path):\(.line) \(.body)"'
+  gh api repos/Rteix05/WR505D/issues/<n°>/comments --jq '.[] | "\(.user.login): \(.body)"'
+  ```
+- Lister chaque point à l'étudiant avec une décision : à corriger, déjà traité, ou pas de changement (avec la raison).
+- Corriger dans la branche de la PR si elle est ouverte, sinon dans une issue de suivi dédiée.
+- Ajouter un test pour chaque correction de comportement, et noter « suite à la review de #<n°> » dans le `docs/<sujet>.md` concerné.
+- Proposer une réponse point par point pour la PR ; ne la publier que si l'étudiant le demande.
+- Si la review révèle une règle d'équipe, la reporter dans ce fichier.
+
 ## Pull Request (quand l'étudiant la demande)
 
 - Vers `develop`, template rempli, `Closes #<n°>`, labels, milestone « Semaine 1 », assignée à l'étudiant.
@@ -179,53 +197,53 @@ Ne jamais coller de token, mot de passe ou fichier `.env` dans une conversation.
 
 ## Déjà dans le code : à réutiliser, pas à réécrire
 
-Dans `develop` depuis le merge des PR #15 (#7), #16 (#10) et #17 (#12), sauf mention contraire.
+Dans `develop` (issues #1, #2, #7, #10 et #12 mergées), sauf mention contraire.
 
-| Élément                                                                                              | Fichier                                                                   | Sert à                                                                         | Pour           |
-| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------- |
-| `computeCart(lines, promoCode?)`                                                                     | `utils/promotions.ts`                                                     | Récapitulatif panier : brut, remises, livraison, total, `messages`             | #8, #9         |
-| `CartLine`, `CartSummary`, `AppliedDiscount`                                                         | `types/promotions.ts`                                                     | Types imposés par le sujet, montants en centimes                               | #8, #9         |
-| `toCents`, `formatCents`                                                                             | `utils/price.ts`                                                          | Prix DummyJSON → centimes, affichage « 19,99 € »                               | #2, #6, #9     |
-| `useAuth()`                                                                                          | `composables/useAuth.ts`                                                  | `user`, `isLoggedIn`, `login()`, `loadUser()`                                  | #11            |
-| `useUserStore()`                                                                                     | `stores/user.ts`                                                          | Utilisateur connecté, `setUser(null)` pour vider                               | #11            |
-| `useAuthCookies()`                                                                                   | `composables/useAuthCookies.ts`                                           | Cookies des jetons, `clear()` pour la déconnexion                              | #11            |
-| `safeRedirect()`                                                                                     | `utils/auth.ts`                                                           | Valide `?redirect=` ; `/connexion` le gère déjà                                | #11            |
-| `$authFetch`                                                                                         | `plugins/01.api.ts`                                                       | Appels avec jeton, refresh automatique sur 401                                 | #1, #11        |
-| `Product`, `ProductsResponse`, `Category`, `User`, `AuthTokens`…                                     | `types/dummyjson.ts` (branche `feature/1-types-api`)                      | Toutes les réponses DummyJSON                                                  | #2, #6, #8     |
-| `useApi()` : `getProducts`, `searchProducts`, `getProductsByCategory`, `getProduct`, `getCategories` | `composables/useApi.ts` (branche `feature/1-types-api`)                   | Routes publiques, `signal` pour annuler                                        | #2, #3, #5, #6 |
-| `pageFromQuery`, `paginationItems`, `discountBadge`, `formatRating`                                  | `utils/pagination.ts`, `utils/product.ts` (branche `feature/2-catalogue`) | Lecture de `?page=`, pages visibles, badge et note                             | #3, #5, #6     |
-| `<ProductCard>`, `<ProductCardSkeleton>`, `<CatalogPagination>`                                      | `components/` (branche `feature/2-catalogue`)                             | Carte produit, squelette, pagination par liens (garde les autres query params) | #3, #4, #5     |
-| `parseCatalogQuery`, `toCatalogQuery`, `updateFilters`, `paginationParams`, `sortParams`             | `utils/catalogQuery.ts` (branche `feature/4-filtres-url`)                 | Filtres du catalogue ↔ query params, validation, pagination                    | #2, #3, #5     |
+| Élément                                                                                              | Fichier                                                   | Sert à                                                                                                           | Pour              |
+| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------- |
+| `computeCart(lines, promoCode?)`                                                                     | `utils/promotions.ts`                                     | Récapitulatif panier : brut, remises, livraison, total, `messages`                                               | #8, #9            |
+| `CartLine`, `CartSummary`, `AppliedDiscount`                                                         | `types/promotions.ts`                                     | Types imposés par le sujet, montants en centimes                                                                 | #8, #9            |
+| `toCents`, `formatCents`                                                                             | `utils/price.ts`                                          | Prix DummyJSON → centimes, affichage « 19,99 € »                                                                 | #2, #6, #9        |
+| `useAuth()`                                                                                          | `composables/useAuth.ts`                                  | `user`, `isLoggedIn`, `login()`, `loadUser()`                                                                    | #11               |
+| `useUserStore()`                                                                                     | `stores/user.ts`                                          | Utilisateur connecté, `setUser(null)` pour vider                                                                 | #11               |
+| `useAuthCookies()`                                                                                   | `composables/useAuthCookies.ts`                           | Cookies des jetons, `clear()` pour la déconnexion                                                                | #11               |
+| `safeRedirect()`                                                                                     | `utils/auth.ts`                                           | Valide `?redirect=` ; `/connexion` le gère déjà                                                                  | #11               |
+| `$authFetch`                                                                                         | `plugins/01.api.ts`                                       | **Seulement** les routes qui exigent d'être connecté (sans jeton : `SessionExpiredError`) ; refresh auto sur 401 | #8 (paniers), #11 |
+| `Product`, `ProductsResponse`, `Category`, `User`, `AuthTokens`…                                     | `types/dummyjson.ts`                                      | Toutes les réponses DummyJSON                                                                                    | #2, #6, #8        |
+| `useApi()` : `getProducts`, `searchProducts`, `getProductsByCategory`, `getProduct`, `getCategories` | `composables/useApi.ts`                                   | Routes **publiques** (catalogue, fiche, catégories), `signal` pour annuler                                       | #2, #3, #5, #6    |
+| `pageFromQuery`, `paginationItems`, `discountBadge`, `formatRating`                                  | `utils/pagination.ts`, `utils/product.ts`                 | Lecture de `?page=`, pages visibles, badge et note                                                               | #3, #5, #6        |
+| `<ProductCard>`, `<ProductCardSkeleton>`, `<CatalogPagination>`                                      | `components/`                                             | Carte produit, squelette, pagination par liens (garde les autres query params)                                   | #3, #4, #5        |
+| `parseCatalogQuery`, `toCatalogQuery`, `updateFilters`, `paginationParams`, `sortParams`             | `utils/catalogQuery.ts` (branche `feature/4-filtres-url`) | Filtres du catalogue ↔ query params, validation, pagination                                                      | #2, #3, #5        |
 
 Déconnexion (#11) : `useAuthCookies().clear()`, `useUserStore().setUser(null)`, puis `navigateTo('/')`. Choix expliqués dans `docs/promotions.md`, `docs/authentification.md` et `docs/refresh-token.md`.
 
 ## Qui attend qui
 
-| Issue                     | Responsable | Attend                                | Débloque         |
-| ------------------------- | ----------- | ------------------------------------- | ---------------- |
-| #1 Types + client API     | Radouan     | rien (réutiliser `$authFetch` de #12) | #2, #4, #6       |
-| #2 Catalogue `/produits`  | Radouan     | #1                                    | #3, #4, #5       |
-| #3 Recherche debounce     | Radouan     | #2 ; param `q` commun avec #4         | —                |
-| #5 Filtre prix            | Radouan     | #2 ; params prix communs avec #4      | —                |
-| #7 Promotions             | Rafael      | mergée                                | #8, #9           |
-| #10 Connexion             | Rafael      | mergée                                | #11, #12         |
-| #12 Refresh token         | Rafael      | mergée                                | client API de #1 |
-| #4 Filtres, tri, URL      | Rafael      | #1, #2 (partie pure faite)            | —                |
-| #6 Fiche produit          | Marwan      | #1 ; bouton « Ajouter » via #8        | —                |
-| #8 Store panier           | Marwan      | #7                                    | #6 (bouton), #9  |
-| #9 Page panier            | Marwan      | #7, #8                                | —                |
-| #11 Middleware, `/compte` | Marwan      | #10                                   | —                |
+| Issue                     | Responsable | Attend                           | Débloque         |
+| ------------------------- | ----------- | -------------------------------- | ---------------- |
+| #1 Types + client API     | Radouan     | mergée                           | #2, #4, #6       |
+| #2 Catalogue `/produits`  | Radouan     | mergée                           | #3, #4, #5       |
+| #3 Recherche debounce     | Radouan     | #2 ; param `q` commun avec #4    | —                |
+| #5 Filtre prix            | Radouan     | #2 ; params prix communs avec #4 | —                |
+| #7 Promotions             | Rafael      | mergée                           | #8, #9           |
+| #10 Connexion             | Rafael      | mergée                           | #11, #12         |
+| #12 Refresh token         | Rafael      | mergée                           | client API de #1 |
+| #4 Filtres, tri, URL      | Rafael      | rien (en cours, PR #22)          | —                |
+| #6 Fiche produit          | Marwan      | rien ; bouton « Ajouter » via #8 | —                |
+| #8 Store panier           | Marwan      | #7                               | #6 (bouton), #9  |
+| #9 Page panier            | Marwan      | #7, #8                           | —                |
+| #11 Middleware, `/compte` | Marwan      | rien (#10 et #12 mergées)        | —                |
 
 ## Ordre de travail et coordination
 
-1. Radouan : #1 (fusionner `types/auth.ts` dans `types/dummyjson.ts`, brancher les appels authentifiés sur `$authFetch`), puis #2, puis #3 et #5.
-2. Marwan : #8 puis #9, et #11 (débloquées) ; #6 après #1.
-3. Rafael : relire les PR de l'équipe ; page de #4 après #1 et #2.
+1. Radouan : #3 puis #5 (#1 et #2 mergées), en lisant les filtres avec `parseCatalogQuery` de #4.
+2. Marwan : #8 puis #9, #11 et #6 : tout est débloqué.
+3. Rafael : #4 (page `/produits` : catégorie et tri), suites de review (#25), relire les PR de l'équipe.
 4. Fin de semaine : `release/v0.1.0`, merge dans `main` et `develop`, tag `v0.1.0` et GitHub Release.
 
 À caler ensemble :
 
 - Noms des query params du catalogue (proposition : `page`, `q`, `category`, `sortBy`, `order`, `minPrice`, `maxPrice`), communs à #3, #4 et #5.
-- Un seul client API : #1 s'appuie sur `$authFetch` et `runtimeConfig.public.apiBase`.
+- Deux clients, un par usage : `useApi()` pour les routes publiques, `$authFetch` pour ce qui exige d'être connecté. Les deux lisent `runtimeConfig.public.apiBase`.
 - Cookie panier (#8) : seulement `productId`, `quantity` et le nécessaire pour `CartLine`, sous 4 Ko.
 - Prix toujours convertis avec `toCents` avant `computeCart`.

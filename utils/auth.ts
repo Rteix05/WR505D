@@ -33,7 +33,10 @@ export function safeRedirect(target: unknown, fallback = '/'): string {
   const value = Array.isArray(target) ? target[0] : target
   if (typeof value !== 'string') return fallback
   if (!value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) return fallback
-  if (value === LOGIN_PATH || value.startsWith(`${LOGIN_PATH}?`)) return fallback
+  // Chemin sans query ni hash, sans slash final, en minuscules (vue-router ignore la casse) :
+  // /connexion, /connexion/, /Connexion#x et /connexion?a=b désignent la même page.
+  const path = value.split(/[?#]/, 1).join('').replace(/\/+$/, '').toLowerCase()
+  if (path === LOGIN_PATH) return fallback
   return value
 }
 

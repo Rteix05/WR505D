@@ -70,7 +70,14 @@ dépassement = total des remises - plafond
 si dépassement > 0 : code réduit de ce dépassement
 ```
 
-Le sujet précise que c'est le code qui est réduit, jamais la remise beauté. La remise beauté (10 %) ne peut de toute façon pas dépasser seule le plafond (25 %). Si le code tombait à 0, il serait retiré de la liste. Un message informe l'utilisateur que son code a été limité.
+Le sujet précise que c'est le code qui est réduit, jamais la remise beauté. La remise beauté (10 %) ne peut de toute façon pas dépasser seule le plafond (25 %). Un message informe l'utilisateur que son code a été limité.
+
+Suite à la review de #15 (Marwan) : la fonction ne suppose plus que le dépassement vient forcément du code. Si une autre remise dépassait un jour le plafond :
+
+- sans code promo, rien n'est réduit et aucun message n'est affiché (un message « code limité » serait faux) ;
+- si le dépassement est plus grand que le code, le code est retiré et le message dit « ne s'applique pas » au lieu de « limité à 0,00 € ».
+
+Deux tests appellent `applyDiscountCap` directement avec une remise fictive de 30 % pour vérifier ces cas, impossibles avec les règles actuelles.
 
 Vérification du scénario 2 (3 × beauty à 19,99 €, TROYES10) :
 
