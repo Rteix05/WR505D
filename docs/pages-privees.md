@@ -60,7 +60,7 @@ await navigateTo('/', { replace: true })
 - `useSeoMeta` avec `robots: 'noindex, nofollow'`, et `/compte` est déjà exclu dans `public/robots.txt`.
 - Accessibilité : `<h1>` relié à la section (`aria-labelledby`), informations en `<dl>` (chaque valeur est lue avec son intitulé), avatar en `alt=""` (décoratif, le nom est écrit à côté), vrai `<button>` pour la déconnexion, focus visible.
 - `v-if="user"` : pendant la déconnexion, le store est vidé juste avant la navigation. La page n'essaie donc pas d'afficher un utilisateur `null`.
-- En-tête : « Bonjour, Emily » (texte simple) devient un lien **« Mon compte »** vers `/compte`.
+- En-tête : un lien **« Mon compte »** vers `/compte` est ajouté **à côté** de « Bonjour, Emily ». Suite à la review de #31 (Rafael) : la première version remplaçait le prénom par le lien, ce qui cassait le test anti-flash de `e2e/connexion.spec.ts`. Ce test a besoin d'une donnée propre à l'utilisateur dans le HTML du serveur : un texte fixe comme « Mon compte » ne prouve pas que c'est **cet** utilisateur qui a été chargé côté serveur. On garde donc le prénom, et le test vérifie aussi le lien.
 
 ## 6. Tests
 
@@ -79,4 +79,11 @@ Le middleware, `logout()` et la page ne sont pas testés automatiquement (il fau
 | `/compte` avec un jeton invalide                      | 302 → `/connexion?redirect=/compte`             |
 | `/connexion?redirect=/compte?a=1%26b=2` déjà connecté | 302 → `/compte?a=1&b=2`                         |
 
-**Pas encore testé dans un navigateur** : le clic sur « Se déconnecter » (cookies supprimés, retour à l'accueil, « Précédent »), et le parcours au clavier. À vérifier avant de cocher les cases de la PR.
+De bout en bout, `e2e/compte.spec.ts` (Playwright, Chromium, build de production), ajouté suite à la review de #31 :
+
+- `/compte?onglet=commandes` déconnecté → `/connexion?redirect=…` (valeur décodée vérifiée, query comprise), puis retour sur `/compte?onglet=commandes` après connexion ;
+- lien « Mon compte » de l'en-tête ;
+- déconnexion à la souris : accueil, lien « Connexion » revenu, cookies `accessToken` et `refreshToken` supprimés, « Précédent » ramène à la connexion et pas au compte, `/compte` de nouveau protégé ;
+- déconnexion au clavier (Entrée sur « Se déconnecter ») ;
+- axe-core sur `/compte` connecté (pas dans `accessibilite.spec.ts` : sans session, axe analyserait la page de connexion après la redirection) ;
+- sans JavaScript : redirection 302 du serveur, la page privée n'est jamais rendue.
