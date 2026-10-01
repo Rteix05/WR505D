@@ -72,4 +72,31 @@ test.describe('Connexion /connexion', () => {
     await login(page, DEMO.username, DEMO.password)
     await expect(page).toHaveURL(/^http:\/\/localhost:\d+\/$/)
   })
+
+  test('nom d’utilisateur mémorisé (store auth persisté) : pré-rempli dès le rendu serveur', async ({
+    page,
+    browser,
+  }) => {
+    await page.goto('/connexion')
+    await login(page, DEMO.username, DEMO.password)
+    await expect(page).toHaveURL(/\/$/)
+
+    // Le cookie `auth` du store ne contient que le nom d'utilisateur, jamais les jetons.
+    const authCookie = (await page.context().cookies()).find((cookie) => cookie.name === 'auth')
+    expect(JSON.parse(decodeURIComponent(authCookie?.value ?? '{}'))).toEqual({
+      rememberedUsername: DEMO.username,
+    })
+
+    // Déconnexion simulée (jetons supprimés), puis /connexion sans JavaScript :
+    // le champ est déjà rempli dans le HTML du serveur.
+    await page.context().clearCookies({ name: /^(accessToken|refreshToken)$/ })
+    const noJs = await browser.newContext({
+      storageState: await page.context().storageState(),
+      javaScriptEnabled: false,
+    })
+    const ssrPage = await noJs.newPage()
+    await ssrPage.goto('/connexion')
+    await expect(ssrPage.getByLabel("Nom d'utilisateur")).toHaveValue(DEMO.username)
+    await noJs.close()
+  })
 })
