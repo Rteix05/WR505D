@@ -176,6 +176,16 @@ git push -u origin feature/14-filtres-url
 
 Ordre conseillé : #1 (types) en premier car tout le reste en dépend, puis #7 (promotions) avant #8 et #9 (le panier appelle `computeCart`), et #10 avant #11 et #12.
 
+### Semaine 2 : comparateur, produits vus récemment, hotfix (milestone « Semaine 2 »)
+
+| Membre  | Issues (semaine 2)                                                                                                    |
+| ------- | --------------------------------------------------------------------------------------------------------------------- |
+| Rafael  | #44 logique pure du comparateur, #47 page `/comparer` (URL source de vérité), #52 organisation de la semaine          |
+| Radouan | #45 client API (plusieurs produits par identifiants), #48 tableau comparatif accessible et mobile, #51 release v0.2.0 |
+| Marwan  | #46 sélection du comparateur (cookie, bouton, barre), #49 logique pure des vus récemment, #50 produits vus récemment  |
+
+Ordre conseillé : #44, #45 et #49 d'abord (les briques dont tout dépend), puis #46, #47, #48 et #50. Le hotfix imposé (issue `bug-prod` ouverte par l'enseignant) est assigné à un membre et relu par un autre dès son apparition, et passe avant tout le reste (24 h ouvrées).
+
 ## Usage de l'IA
 
 Chaque membre tient `docs/ai-usage/<prenom>.md` à jour (modèle : `docs/ai-usage/_modele.md`).
