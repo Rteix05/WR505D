@@ -112,6 +112,10 @@ Pour tester l'expiration du jeton : `NUXT_PUBLIC_AUTH_EXPIRES_IN_MINS=1 npm run 
 
 Page, recherche, catégorie, tri et prix sont dans les query params, lus et écrits par les fonctions pures de `utils/catalogQuery.ts`. Noms des paramètres et règles de validation dans [docs/catalogue-url.md](docs/catalogue-url.md).
 
+### Fiche produit
+
+`/produits/[id]` : galerie, marque, note, prix, stock (« Plus que X en stock » sous 5, bouton désactivé en rupture), garantie et livraison, ajout au panier. Vraie 404 (statut HTTP compris) pour un identifiant inexistant ou invalide, page d'erreur en français (`error.vue`). Choix détaillés dans [docs/fiche-produit.md](docs/fiche-produit.md).
+
 ### Panier
 
 Store Pinia `cart` persisté dans un cookie (présent dès le rendu serveur, moins de 4 Ko), limite de stock expliquée à l'utilisateur, récapitulatif calculé par `computeCart`. Choix techniques (format du cookie, validation, stock) dans [docs/panier.md](docs/panier.md).
