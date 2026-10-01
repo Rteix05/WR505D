@@ -161,6 +161,7 @@ Onglet « Files changed » : commenter les lignes (pourquoi ce choix ? cas limit
 ## Avant de dire « fini »
 
 - `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm run test:coverage`, `npm run build` : tout vert.
+- Juger sur le **code de retour** (`npm run lint && npm run typecheck && …`), jamais sur un extrait de la sortie : un `| tail -1` a déjà masqué une erreur ESLint (`import/first`) qui n'a été vue qu'en CI.
 - Tester dans le vrai site (`npm run dev`) ce qui peut l'être ; dire clairement ce qui n'a pas été testé.
 - Une page ou un parcours ajouté ou modifié : ajouter ou adapter son parcours Playwright, puis `npm run test:e2e` (voir ci-dessous).
 

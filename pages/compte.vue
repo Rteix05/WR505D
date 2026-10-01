@@ -1,7 +1,7 @@
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth' })
-
 import { storeToRefs } from 'pinia'
+
+definePageMeta({ middleware: 'auth' })
 
 // Une seule déconnexion dans l'application : celle du store auth (#34).
 const auth = useAuthStore()
