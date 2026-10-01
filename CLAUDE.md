@@ -133,6 +133,61 @@ Puis reprendre à l'étape 2 avec l'issue suivante.
 
 Onglet « Files changed » : commenter les lignes (pourquoi ce choix ? cas limite oublié ? nom peu clair ?), tester la branche en local (`git switch <branche> && npm run dev`), puis « Review changes » → « Approve » ou « Request changes ». Des commentaires argumentés, pas un simple « LGTM » : c'est noté.
 
+### Release de fin de semaine (v0.1.0, v0.2.0, v1.0.0)
+
+Quand toutes les issues de la semaine sont mergées dans `develop`. Pilotée par un seul membre ; `X.Y.Z` = la version (ex. `0.1.0`).
+
+**Avant de commencer**, vérifier la checklist du jalon :
+
+- toutes les issues du milestone fermées par une PR relue ;
+- CI verte sur `develop` (les deux jobs) ;
+- aucun « À compléter » dans `docs/ai-usage/*.md` et dans le README ;
+- URL du catalogue testée sans JavaScript.
+
+**1. Branche de release** (gel des fonctionnalités : seulement version, CHANGELOG et corrections) :
+
+```bash
+git switch develop && git pull
+git switch -c release/vX.Y.Z
+npm version X.Y.Z --no-git-tag-version    # écrit "version" dans package.json
+# compléter CHANGELOG.md : section [X.Y.Z] avec la date, une ligne par issue (#issue, PR #n°)
+git add package.json package-lock.json CHANGELOG.md
+git commit -m "chore: version X.Y.Z et CHANGELOG"
+git push -u origin release/vX.Y.Z
+```
+
+**2. PR `release/vX.Y.Z` → `main`**, titre `release: vX.Y.Z`, corps = la section du CHANGELOG. CI verte + 1 approbation, puis « Create a merge commit ». **Ne pas supprimer la branche** : elle sert à l'étape 4.
+
+**3. Tag annoté et GitHub Release** sur le commit de merge de `main` :
+
+```bash
+git switch main && git pull
+git tag -a vX.Y.Z -m "vX.Y.Z"
+git push origin vX.Y.Z
+gh release create vX.Y.Z --title "vX.Y.Z" --notes-file <section du CHANGELOG>
+```
+
+Le merge dans `main` déclenche le déploiement de production Vercel : vérifier le site en ligne.
+
+**4. Retour dans `develop`** : PR `release/vX.Y.Z` → `develop` (« Create a merge commit », 1 approbation), puis supprimer la branche de release.
+
+### Hotfix (bug en production)
+
+```bash
+git switch main && git pull
+git switch -c hotfix/<description>
+# correction + test qui reproduit le bug, puis ligne dans CHANGELOG.md
+npm version patch --no-git-tag-version   # X.Y.Z → X.Y.(Z+1), ex. 0.1.0 → 0.1.1
+git add <fichiers modifiés et nouveaux> package.json package-lock.json CHANGELOG.md
+git commit -m "fix: <description>"
+git push -u origin hotfix/<description>
+```
+
+- `npm version patch` et pas `npm version X.Y.Z+1` : npm lit `+1` comme une métadonnée de build (SemVer), pas comme une addition, et répond « Version not changed ».
+- `git add` explicite et pas `git commit -am` : `-a` ignore les **nouveaux** fichiers, le test qui reproduit le bug ne serait pas commité.
+
+PR `hotfix/<description>` → `main` (label `bug-prod`), merge, tag annoté de la nouvelle version (celle affichée par `npm version patch`, ex. `v0.1.1`) et GitHub Release comme à l'étape 3, puis PR `hotfix/<description>` → `develop` pour ne pas perdre la correction.
+
 ### À ne jamais faire
 
 - Commiter directement sur `main` ou `develop` (branches protégées).
