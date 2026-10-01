@@ -1,7 +1,11 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
 
-const { user, logout } = useAuth()
+import { storeToRefs } from 'pinia'
+
+// Une seule déconnexion dans l'application : celle du store auth (#34).
+const auth = useAuthStore()
+const { user } = storeToRefs(auth)
 
 useSeoMeta({
   title: 'Mon compte',
@@ -35,7 +39,7 @@ useSeoMeta({
         </dl>
       </div>
 
-      <button type="button" class="account__logout" @click="logout">Se déconnecter</button>
+      <button type="button" class="account__logout" @click="auth.logout()">Se déconnecter</button>
     </template>
   </section>
 </template>

@@ -36,8 +36,9 @@ export const useAuthStore = defineStore(
     }
 
     /**
-     * Déconnexion : jetons et utilisateur supprimés, retour à l'accueil.
-     * `replace` : le bouton « Précédent » ne ramène pas sur une page privée.
+     * Déconnexion, la seule de l'application (/compte, #34) : jetons et utilisateur supprimés,
+     * retour à l'accueil. DummyJSON n'a pas de route de révocation : sans cookie, plus aucun
+     * appel authentifié n'est possible. `replace` : « Précédent » ne ramène pas sur une page privée.
      * Le nom d'utilisateur mémorisé est gardé, pour pré-remplir la prochaine connexion.
      */
     async function logout(): Promise<void> {
