@@ -29,6 +29,8 @@ l'API ne répond pas (réseau, 500)         → message + « Réessayer », pas 
 - **Une erreur réseau n'est pas une 404** : le produit existe peut-être. On affiche « Impossible de charger ce produit » avec un bouton « Réessayer », comme le catalogue.
 - **`error.vue`** : sans elle, Nuxt affiche sa page par défaut en anglais, sans l'en-tête du site. Elle est en `noindex`, et ses liens sont de simples `<a href>` : ils fonctionnent sans JavaScript, et le rechargement repart d'une application sans erreur (pas besoin de `clearError()`).
 
+**Titre de la page d'erreur (suite à la review de #36, Radouan)** : la première version affichait `statusMessage` comme titre. Ça marchait pour la fiche, mais `error.vue` est globale : pour une route inconnue, Nuxt remplit lui-même `statusMessage` en anglais, et `/nexiste-pas` affichait « Page not found: /nexiste-pas ». Maintenant, `errorPageTitle` (fonction pure, testée) n'utilise que `data.title`, fourni par la page (`createError({ data: { title: 'Produit introuvable' } })`), et sinon « Page introuvable ». Piège rencontré : pour une erreur levée pendant le rendu serveur, Nuxt transmet `data` à `error.vue` en **texte JSON**, et en objet lors d'une navigation côté client. La fonction gère les deux. Un test e2e vérifie `/nexiste-pas` (statut 404, titre en français, aucun « not found »), et la page est ajoutée au contrôle d'accessibilité.
+
 Vérifié sur le build de production : `/produits/99999`, `/produits/abc` et `/produits/0` répondent 404, avec le titre « Produit introuvable · ChampaShop ».
 
 ## 3. Le stock
