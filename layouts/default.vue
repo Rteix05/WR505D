@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 
 // storeToRefs garde la réactivité en déstructurant le store (une simple déstructuration la perdrait).
 const { user } = storeToRefs(useAuthStore())
+const cart = useCartStore()
 </script>
 
 <template>
@@ -18,6 +19,13 @@ const { user } = storeToRefs(useAuthStore())
           <li v-else><NuxtLink to="/connexion">Connexion</NuxtLink></li>
         </ul>
       </nav>
+      <NuxtLink
+        to="/panier"
+        class="layout__cart"
+        :aria-label="`Panier, ${cart.itemCount} article${cart.itemCount > 1 ? 's' : ''}`"
+      >
+        Panier ({{ cart.itemCount }})
+      </NuxtLink>
     </header>
     <main id="contenu" class="layout__main">
       <slot />
@@ -49,6 +57,9 @@ const { user } = storeToRefs(useAuthStore())
   font-size: 1.25rem;
   text-decoration: none;
   color: inherit;
+}
+.layout__cart {
+  font-weight: 600;
 }
 .layout__nav {
   display: flex;
