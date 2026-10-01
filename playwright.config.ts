@@ -8,6 +8,10 @@ const isCI = Boolean(process.env.CI)
 export default defineConfig({
   testDir: 'e2e',
   fullyParallel: true,
+  // En local, Playwright lance par défaut un navigateur par paire de cœurs (6 sur 12) : avec le build
+  // et les autres applications, certains navigateurs mettaient plus de 30 s à s'ouvrir. 3 suffisent.
+  // En CI, la valeur par défaut (1 sur une machine à 2 cœurs) est gardée.
+  workers: isCI ? undefined : 3,
   forbidOnly: isCI,
   // Les parcours appellent la vraie API DummyJSON : une relance absorbe un aléa réseau en CI.
   retries: isCI ? 2 : 0,
