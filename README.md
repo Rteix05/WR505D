@@ -122,7 +122,15 @@ Store Pinia `cart` persisté dans un cookie (présent dès le rendu serveur, moi
 
 ### Filtre prix min / max
 
-_À compléter dans l'issue dédiée : stratégie retenue, nombre d'appels, performance, impact sur la pagination._
+DummyJSON n'a aucun paramètre de prix, et filtrer la page de 12 produits reçue donnerait des pages vides et un total faux. Stratégie retenue :
+
+- **Nombre d'appels** : un seul par affichage. Tous les produits concernés (catalogue, catégorie ou recherche) sont demandés en une fois (`limit=0`), réduits aux 7 champs d'une carte (`select`).
+- **Performance** : 6,8 Ko compressés pour les 194 produits, soit moins de deux fois une page normale (3,9 Ko). Sans `select`, ce serait 47,5 Ko. Le tri reste fait par l'API.
+- **Pagination** : filtrage puis découpage en pages de 12 dans l'application (`filterLocally`, `localPage`). Le total est exact (« 31 produits, page 1 sur 3 »), les liens de pagination ne changent pas.
+- **Seulement si besoin** : sans prix, le catalogue reste paginé par l'API. Le même chemin sert à la recherche + catégorie (#3), que l'API ne sait pas combiner.
+- Prix comparés en centimes, bornes incluses, sur le prix affiché.
+
+Alternatives écartées (enchaîner les pages de l'API, route serveur avec cache) et mesures dans [docs/filtre-prix.md](docs/filtre-prix.md).
 
 ## Conventions Git (GitFlow)
 
