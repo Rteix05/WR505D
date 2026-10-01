@@ -50,7 +50,15 @@ describe('CatalogToolbar', () => {
 
     await wrapper.find('form').trigger('submit')
     expect(wrapper.emitted('apply')).toEqual([
-      [{ category: 'smartphones', sortBy: 'rating', order: 'desc' }],
+      [
+        {
+          category: 'smartphones',
+          sortBy: 'rating',
+          order: 'desc',
+          minPrice: null,
+          maxPrice: null,
+        },
+      ],
     ])
   })
 
@@ -61,7 +69,9 @@ describe('CatalogToolbar', () => {
     await wrapper.find('#filter-category').setValue('')
     await wrapper.find('#filter-sort').setValue('relevance')
     await wrapper.find('form').trigger('submit')
-    expect(wrapper.emitted('apply')?.[0]).toEqual([{ category: null, sortBy: null, order: 'asc' }])
+    expect(wrapper.emitted('apply')?.[0]).toEqual([
+      { category: null, sortBy: null, order: 'asc', minPrice: null, maxPrice: null },
+    ])
   })
 
   it('l’URL change sans le formulaire (bouton retour) : les menus suivent', async () => {
@@ -85,7 +95,7 @@ describe('CatalogToolbar', () => {
     expect(active.text()).toContain('Effacer les filtres')
   })
 
-  it('sans JavaScript : formulaire GET vers /produits, recherche et prix conservés', async () => {
+  it('sans JavaScript : formulaire GET vers /produits, recherche conservée, prix en vrais champs', async () => {
     const wrapper = await mountSuspended(CatalogToolbar, {
       props: { filters: filters({ q: 'rouge', minPrice: 5 }), categories },
     })
@@ -93,8 +103,71 @@ describe('CatalogToolbar', () => {
     expect(form.attributes('method')).toBe('get')
     expect(form.attributes('action')).toBe('/produits')
     expect(wrapper.find('input[type="hidden"][name="q"]').attributes('value')).toBe('rouge')
-    expect(wrapper.find('input[type="hidden"][name="minPrice"]').attributes('value')).toBe('5')
-    expect(wrapper.find('input[name="maxPrice"]').exists()).toBe(false)
+    expect(wrapper.find('#filter-min-price').attributes('name')).toBe('minPrice')
+    expect(wrapper.find('#filter-max-price').attributes('name')).toBe('maxPrice')
+    expect(wrapper.find('input[type="hidden"][name="minPrice"]').exists()).toBe(false)
     expect(wrapper.find('#filter-sort').attributes('name')).toBe('sort')
+  })
+
+  describe('prix (#5)', () => {
+    it('champs reliés à leur label, pré-remplis depuis l’URL avec la virgule', async () => {
+      const wrapper = await mountSuspended(CatalogToolbar, {
+        props: { filters: filters({ minPrice: 10.5 }), categories },
+      })
+      expect(wrapper.find('label[for="filter-min-price"]').exists()).toBe(true)
+      expect(wrapper.find('label[for="filter-max-price"]').exists()).toBe(true)
+      expect(wrapper.find('fieldset legend').text()).toBe('Prix (€)')
+      expect(wrapper.find<HTMLInputElement>('#filter-min-price').element.value).toBe('10,5')
+      expect(wrapper.find<HTMLInputElement>('#filter-max-price').element.value).toBe('')
+    })
+
+    it('« Appliquer » émet les bornes, virgule acceptée, vide = pas de borne', async () => {
+      const wrapper = await mountSuspended(CatalogToolbar, {
+        props: { filters: filters(), categories },
+      })
+      await wrapper.find('#filter-min-price').setValue('9,99')
+      await wrapper.find('form').trigger('submit')
+      expect(wrapper.emitted('apply')?.[0]?.[0]).toMatchObject({ minPrice: 9.99, maxPrice: null })
+    })
+
+    it('bornes inversées : remises dans l’ordre', async () => {
+      const wrapper = await mountSuspended(CatalogToolbar, {
+        props: { filters: filters(), categories },
+      })
+      await wrapper.find('#filter-min-price').setValue('50')
+      await wrapper.find('#filter-max-price').setValue('10')
+      await wrapper.find('form').trigger('submit')
+      expect(wrapper.emitted('apply')?.[0]?.[0]).toMatchObject({ minPrice: 10, maxPrice: 50 })
+    })
+
+    it('saisie invalide : rien n’est émis, erreur annoncée et reliée au champ', async () => {
+      const wrapper = await mountSuspended(CatalogToolbar, {
+        props: { filters: filters(), categories },
+        attachTo: document.body,
+      })
+      await wrapper.find('#filter-max-price').setValue('abc')
+      await wrapper.find('form').trigger('submit')
+
+      expect(wrapper.emitted('apply')).toBeUndefined()
+      const input = wrapper.find('#filter-max-price')
+      expect(input.attributes('aria-invalid')).toBe('true')
+      expect(input.attributes('aria-describedby')).toBe('filter-max-price-error')
+      expect(wrapper.find('#filter-max-price-error').attributes('role')).toBe('alert')
+      expect(document.activeElement).toBe(input.element)
+      wrapper.unmount()
+    })
+
+    it('l’URL change (bouton retour) : les champs et les erreurs suivent', async () => {
+      const wrapper = await mountSuspended(CatalogToolbar, {
+        props: { filters: filters(), categories },
+      })
+      await wrapper.find('#filter-min-price').setValue('-1')
+      await wrapper.find('form').trigger('submit')
+      await wrapper.setProps({ filters: filters({ minPrice: 20, maxPrice: 30 }) })
+
+      expect(wrapper.find<HTMLInputElement>('#filter-min-price').element.value).toBe('20')
+      expect(wrapper.find<HTMLInputElement>('#filter-max-price').element.value).toBe('30')
+      expect(wrapper.find('#filter-min-price-error').exists()).toBe(false)
+    })
   })
 })

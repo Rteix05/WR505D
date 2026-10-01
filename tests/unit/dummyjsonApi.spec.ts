@@ -73,4 +73,39 @@ describe('createDummyJsonApi', () => {
 
     await expect(api.getProduct(99999)).rejects.toBe(notFound)
   })
+
+  describe('getAllProductSummaries', () => {
+    const select = 'id,title,price,rating,discountPercentage,thumbnail,category'
+
+    it('sans recherche ni catégorie : tout le catalogue, champs réduits, tri transmis', async () => {
+      const { request, api } = fakeRequest()
+      await api.getAllProductSummaries({ q: '', category: null }, { sortBy: 'price' })
+      expect(request).toHaveBeenCalledWith('/products', {
+        query: { limit: 0, select, sortBy: 'price', order: 'asc' },
+        signal: undefined,
+      })
+    })
+
+    it('catégorie seule : route de la catégorie, slug encodé', async () => {
+      const { request, api } = fakeRequest()
+      await api.getAllProductSummaries({ q: '', category: 'mens-shirts' })
+      expect(request).toHaveBeenCalledWith('/products/category/mens-shirts', {
+        query: { limit: 0, select },
+        signal: undefined,
+      })
+    })
+
+    it('recherche (avec ou sans catégorie) : route de recherche, catégorie filtrée ensuite', async () => {
+      const { request, api } = fakeRequest()
+      const controller = new AbortController()
+      await api.getAllProductSummaries(
+        { q: 'phone', category: 'smartphones' },
+        { signal: controller.signal },
+      )
+      expect(request).toHaveBeenCalledWith('/products/search', {
+        query: { q: 'phone', limit: 0, select },
+        signal: controller.signal,
+      })
+    })
+  })
 })
