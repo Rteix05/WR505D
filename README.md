@@ -90,6 +90,10 @@ Réponses DummyJSON typées dans `types/dummyjson.ts` à partir des réponses r�
 
 `/produits` : 12 produits par page, page courante dans l'URL (`?page=`), rendu serveur (fonctionne sans JavaScript), squelettes, erreur avec « Réessayer ». Choix détaillés dans [docs/catalogue.md](docs/catalogue.md).
 
+### Recherche
+
+Champ de recherche sur `/produits` (`/products/search`) : debounce de 300 ms, requête précédente annulée (une réponse ancienne n'écrase jamais la plus récente), `?q=` dans l'URL avec retour à la page 1, fonctionne sans JavaScript. Recherche + catégorie filtrée localement (l'API ne sait pas les combiner). Détails dans [docs/recherche.md](docs/recherche.md).
+
 ### Store d'authentification (séance 7)
 
 `useAuthStore` (setup store : state, getters, actions) regroupe l'authentification pour les composants ; le nom de la dernière connexion est persisté en cookie par `pinia-plugin-persistedstate` et pré-remplit `/connexion` dès le rendu serveur. Détails dans [docs/store-auth.md](docs/store-auth.md).
