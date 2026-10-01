@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { CatalogFilters } from '~/types/catalog'
-import type { ProductsResponse } from '~/types/dummyjson'
+import type { ProductSummary, ProductsResponse } from '~/types/dummyjson'
 
 const route = useRoute()
 const config = useRuntimeConfig()
 const api = useApi()
 
-// L'URL est la seule source de vérité : page, catégorie, tri (et plus tard recherche, prix)
+// L'URL est la seule source de vérité : page, recherche, catégorie, tri et prix
 // sont relus depuis la query à chaque changement, jamais copiés dans un ref.
 const filters = computed((): CatalogFilters => parseCatalogQuery(route.query))
 
@@ -31,17 +31,20 @@ const { data: categories } = await useAsyncData('categories', () => api.getCateg
 // Anti-race : si l'URL change pendant une requête (recherche « pho » puis « phone »),
 // `dedupe: 'cancel'` annule la précédente et ignore sa réponse. Son `signal` est passé
 // à l'API : la requête réseau elle-même est interrompue, pas seulement son résultat.
-const { data, status, error, refresh } = await useAsyncData<ProductsResponse>(
+// La liste ne contient que les champs d'une carte (`ProductSummary`) : c'est ce que renvoie
+// le filtrage local, et une réponse complète de l'API les contient aussi.
+const { data, status, error, refresh } = await useAsyncData<ProductsResponse<ProductSummary>>(
   'catalogue',
   async (_nuxtApp, { signal }) => {
     const current = filters.value
     const sort = sortParams(current)
     const params = { ...paginationParams(current.page), ...sort, signal }
 
-    // Recherche + catégorie : l'API ne sait pas les combiner. Tous les résultats de la
-    // recherche (déjà triés par l'API) sont filtrés et paginés ici.
+    // Filtres que l'API ne sait pas appliquer (prix, ou recherche + catégorie) : un seul
+    // appel pour tous les produits concernés, réduits aux champs d'une carte et déjà triés
+    // par l'API, puis filtrage et pagination ici. Stratégie expliquée dans docs/filtre-prix.md.
     if (needsLocalFiltering(current)) {
-      const all = await api.searchProducts(current.q, { limit: 0, ...sort, signal })
+      const all = await api.getAllProductSummaries(current, { ...sort, signal })
       return localPage(filterLocally(all.products, current), current.page)
     }
     if (current.q) return api.searchProducts(current.q, params)
@@ -70,7 +73,8 @@ const statusMessage = computed((): string => {
   const count = `${total.value} produit${total.value > 1 ? 's' : ''}`
   const search = filters.value.q ? ` pour « ${filters.value.q} »` : ''
   const where = currentCategory.value ? ` dans ${currentCategory.value.name}` : ''
-  return `${count}${search}${where}, page ${page.value} sur ${totalPages.value}`
+  const price = hasPriceFilter(filters.value) ? ` ${priceRangeLabel(filters.value)}` : ''
+  return `${count}${search}${where}${price}, page ${page.value} sur ${totalPages.value}`
 })
 
 async function applyFilters(changes: Partial<CatalogFilters>): Promise<void> {
@@ -91,6 +95,24 @@ async function applySearch(q: string): Promise<void> {
 const withoutSearch = computed(() => ({
   query: toCatalogQuery(updateFilters(filters.value, { q: '' })),
 }))
+
+const priceFiltered = computed((): boolean => hasPriceFilter(filters.value))
+
+/** Lien « Effacer le filtre de prix » : garde la recherche, la catégorie et le tri. */
+const withoutPrice = computed(() => ({
+  query: toCatalogQuery(updateFilters(filters.value, { minPrice: null, maxPrice: null })),
+}))
+
+/** Aucun résultat : on rappelle tous les filtres actifs, pour comprendre pourquoi. */
+const noResultMessage = computed((): string => {
+  const current = filters.value
+  const parts = ['Aucun produit']
+  if (current.q) parts.push(`ne correspond à « ${current.q} »`)
+  if (currentCategory.value) parts.push(`dans ${currentCategory.value.name}`)
+  else if (current.category) parts.push('dans cette catégorie')
+  if (hasPriceFilter(current)) parts.push(priceRangeLabel(current))
+  return parts.length > 1 ? `${parts.join(' ')}.` : 'Aucun produit à afficher pour le moment.'
+})
 
 // Après un changement de page (pagination), le focus revient sur le titre (et la vue
 // remonte) : sinon un utilisateur clavier resterait en bas, sur un lien qui a changé de sens.
@@ -125,9 +147,9 @@ useSeoMeta({
   ogDescription: 'Tout le catalogue ChampaShop : beauté, high-tech, maison, mode et plus encore.',
   ogType: 'website',
   ogUrl: canonical,
-  // Les pages de résultats de recherche ne sont pas indexées (une par mot tapé, contenu
-  // en double) ; les liens vers les produits restent suivis.
-  robots: () => (filters.value.q ? 'noindex, follow' : undefined),
+  // Les pages de recherche et de fourchette de prix ne sont pas indexées (une par mot tapé
+  // ou par prix saisi : contenu en double à l'infini) ; les liens vers les produits restent suivis.
+  robots: () => (filters.value.q || hasPriceFilter(filters.value) ? 'noindex, follow' : undefined),
 })
 useHead({ link: [{ rel: 'canonical', href: canonical }] })
 </script>
@@ -149,15 +171,18 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
 
     <div v-else-if="!loading && products.length === 0" class="catalogue__message">
       <p v-if="outOfRange">Cette page n'existe pas : le catalogue compte {{ totalPages }} pages.</p>
-      <p v-else-if="filters.q">
-        Aucun produit ne correspond à « {{ filters.q }} »{{
-          currentCategory ? ` dans ${currentCategory.name}` : ''
-        }}.
-      </p>
-      <p v-else-if="filters.category">Aucun produit dans cette catégorie.</p>
-      <p v-else>Aucun produit à afficher pour le moment.</p>
+      <p v-else>{{ noResultMessage }}</p>
       <NuxtLink v-if="outOfRange" to="/produits" class="catalogue__button" :aria-current="false">
         Revenir à la première page
+      </NuxtLink>
+      <!-- Le prix est le filtre le plus souvent trop étroit : c'est lui qu'on propose de retirer. -->
+      <NuxtLink
+        v-else-if="priceFiltered"
+        :to="withoutPrice"
+        class="catalogue__button"
+        :aria-current="false"
+      >
+        Effacer le filtre de prix
       </NuxtLink>
       <NuxtLink
         v-else-if="filters.q"
