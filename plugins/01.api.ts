@@ -1,4 +1,4 @@
-import type { AuthTokens } from '~/types/auth'
+import type { AuthTokens } from '~/types/dummyjson'
 import type { AuthFetchOptions } from '~/utils/authFetch'
 
 // Fournit $authFetch, le client HTTP authentifié de l'application.

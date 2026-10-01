@@ -1,6 +1,6 @@
 # Authentification : choix techniques
 
-Issue #10. Fichiers : `types/auth.ts`, `utils/auth.ts`, `stores/user.ts`, `composables/useAuth.ts`, `plugins/auth.server.ts`, `pages/connexion.vue`, `tests/unit/auth.spec.ts`.
+Issue #10. Fichiers : `types/dummyjson.ts`, `utils/auth.ts`, `stores/user.ts`, `composables/useAuth.ts`, `plugins/auth.server.ts`, `pages/connexion.vue`, `tests/unit/auth.spec.ts`.
 
 ## 1. Vue d'ensemble
 
@@ -19,7 +19,7 @@ Chaque fichier a un seul rôle (responsabilité unique) :
 
 | Fichier                  | Rôle                                                              |
 | ------------------------ | ----------------------------------------------------------------- |
-| `types/auth.ts`          | Types des réponses DummyJSON et de l'utilisateur gardé            |
+| `types/dummyjson.ts`     | Types des réponses DummyJSON et de l'utilisateur gardé            |
 | `utils/auth.ts`          | Fonctions pures : réduction du profil, redirection sûre, messages |
 | `stores/user.ts`         | État : qui est connecté                                           |
 | `composables/useAuth.ts` | Appels API et cookies : le seul endroit qui parle à `/auth/*`     |
@@ -42,7 +42,7 @@ Vérifié : avec un cookie valide, `curl http://localhost:3000/` renvoie directe
 
 Or l'état Pinia est sérialisé dans le HTML envoyé au navigateur. Stocker la réponse brute reviendrait à écrire ces données dans le code source de chaque page. `toAuthUser` ne garde que ce qui sert à l'affichage (id, nom d'utilisateur, e-mail, prénom, nom, avatar).
 
-Les champs sensibles ne sont même pas déclarés dans `MeResponse` : impossible de les utiliser par erreur, TypeScript refuserait. Vérifié : le HTML d'une page connectée ne contient ni `emilyspass`, ni le numéro de carte.
+Les champs sensibles ne sont même pas déclarés dans `User` : impossible de les utiliser par erreur, TypeScript refuserait. Vérifié : le HTML d'une page connectée ne contient ni `emilyspass`, ni le numéro de carte.
 
 ## 4. Les cookies
 
@@ -65,7 +65,7 @@ La page lit `?redirect=/compte` pour renvoyer l'utilisateur là où il allait (l
 
 - doit commencer par `/` ;
 - refuse `//site.com` et `/\site.com` (les navigateurs les interprètent comme une autre adresse) ;
-- refuse `/connexion` (boucle inutile) ;
+- refuse la page de connexion elle-même, sous toutes ses formes : `/connexion`, `/connexion/`, `/Connexion`, `/connexion#…`, `/connexion?…` (boucle inutile). La comparaison se fait sur le chemin seul, sans slash final et en minuscules, car vue-router ignore la casse (ajouté suite à la review de #16) ;
 - sinon, repli sur l'accueil.
 
 La fonction reçoit `unknown` car `route.query.redirect` peut être une chaîne, un tableau (`?redirect=a&redirect=b`) ou absent : on vérifie le type avant de l'utiliser (narrowing), sans `any`.
@@ -111,4 +111,4 @@ Testé à la main : validation des champs vides (focus, `aria-invalid`), rendu s
 
 - **#11** (Marwan) : middleware `auth` sur `/compte`, déconnexion (vider les cookies et le store). Il utilisera `useAuth()` et `useUserStore().setUser(null)`.
 - **#12** : quand `/auth/me` renvoie 401, rafraîchir le jeton avec `refreshToken` au lieu de considérer l'utilisateur déconnecté.
-- **#1** (Radouan) : `types/auth.ts` sera fusionné dans `types/dummyjson.ts`.
+- **#1** (Radouan) : fait, les types d'authentification sont dans `types/dummyjson.ts` (`MeResponse` renommé `User`).

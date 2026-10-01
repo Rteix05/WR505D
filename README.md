@@ -25,20 +25,23 @@ Le site est alors disponible sur http://localhost:3000.
 
 ## Scripts
 
-| Script                  | Rôle                                                      |
-| ----------------------- | --------------------------------------------------------- |
-| `npm run dev`           | Serveur de développement                                  |
-| `npm run build`         | Build de production                                       |
-| `npm run preview`       | Prévisualise le build de production                       |
-| `npm run lint`          | ESLint (règle `no-explicit-any` en erreur)                |
-| `npm run lint:fix`      | ESLint avec correction automatique                        |
-| `npm run format`        | Formate le code avec Prettier                             |
-| `npm run format:check`  | Vérifie le formatage (utilisé par la CI)                  |
-| `npm run typecheck`     | Vérification TypeScript (`nuxt typecheck`)                |
-| `npm run test`          | Tests Vitest                                              |
-| `npm run test:coverage` | Tests + couverture (seuil 90 % sur `utils/promotions.ts`) |
+| Script                  | Rôle                                                                                     |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| `npm run dev`           | Serveur de développement                                                                 |
+| `npm run build`         | Build de production                                                                      |
+| `npm run preview`       | Prévisualise le build de production                                                      |
+| `npm run lint`          | ESLint (règle `no-explicit-any` en erreur)                                               |
+| `npm run lint:fix`      | ESLint avec correction automatique                                                       |
+| `npm run format`        | Formate le code avec Prettier                                                            |
+| `npm run format:check`  | Vérifie le formatage (utilisé par la CI)                                                 |
+| `npm run typecheck`     | Vérification TypeScript (`nuxt typecheck`)                                               |
+| `npm run test`          | Tests Vitest                                                                             |
+| `npm run test:coverage` | Tests + couverture (seuil 90 % sur `utils/promotions.ts`)                                |
+| `npm run test:e2e`      | Parcours Playwright sur le build de production (catalogue, connexion, accessibilité axe) |
 
-La CI (`.github/workflows/ci.yml`) exécute sur chaque PR : install, lint, format, typecheck, tests avec couverture, build.
+La CI (`.github/workflows/ci.yml`) exécute sur chaque PR : install, lint, format, typecheck, tests avec couverture, build, puis un second job lance les parcours Playwright (rapport HTML en artefact).
+
+Première utilisation de Playwright en local : `npx playwright install chromium`.
 
 ## Déploiement
 
@@ -79,6 +82,14 @@ docs/ai-usage/  journal d'usage de l'IA, un fichier par étudiant
 - Rendu serveur (SSR) : le contenu est présent dans le HTML initial.
 - `public/robots.txt` exclut les pages privées (`/compte`, `/panier`, `/connexion`).
 
+### Types et client API
+
+Réponses DummyJSON typées dans `types/dummyjson.ts` à partir des réponses réelles. Routes publiques via `useApi()`, routes authentifiées via `$authFetch`, URL de base dans `runtimeConfig.public.apiBase`. Choix détaillés dans [docs/client-api.md](docs/client-api.md).
+
+### Catalogue
+
+`/produits` : 12 produits par page, page courante dans l'URL (`?page=`), rendu serveur (fonctionne sans JavaScript), squelettes, erreur avec « Réessayer ». Choix détaillés dans [docs/catalogue.md](docs/catalogue.md).
+
 ### Moteur de promotions
 
 Fonction pure `computeCart` dans `utils/promotions.ts`, montants en centimes entiers. Choix techniques détaillés (arrondi, ordre des règles, plafond, cas limites) dans [docs/promotions.md](docs/promotions.md).
@@ -90,6 +101,10 @@ Connexion DummyJSON, jetons en cookies, utilisateur chargé côté serveur (pas 
 Les appels authentifiés passent par `$authFetch` : sur une 401, le jeton est rafraîchi une seule fois (single-flight) même si plusieurs requêtes échouent en même temps, puis elles sont rejouées. Détails dans [docs/refresh-token.md](docs/refresh-token.md).
 
 Pour tester l'expiration du jeton : `NUXT_PUBLIC_AUTH_EXPIRES_IN_MINS=1 npm run dev`.
+
+### URL du catalogue
+
+Page, recherche, catégorie, tri et prix sont dans les query params, lus et écrits par les fonctions pures de `utils/catalogQuery.ts`. Noms des paramètres et règles de validation dans [docs/catalogue-url.md](docs/catalogue-url.md).
 
 ### Panier
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { httpStatusOf, loginErrorMessage, safeRedirect, toAuthUser } from '../../utils/auth'
-import type { MeResponse } from '../../types/auth'
+import type { User } from '../../types/dummyjson'
 
 describe('toAuthUser', () => {
   it('ne garde que les champs utiles, jamais les données sensibles', () => {
@@ -20,7 +20,7 @@ describe('toAuthUser', () => {
       // Champs réellement renvoyés par /auth/me mais absents du type
       password: 'emilyspass',
       bank: { cardNumber: '3693233511855044' },
-    } satisfies MeResponse & Record<string, unknown>
+    } satisfies User & Record<string, unknown>
 
     expect(toAuthUser(me)).toEqual({
       id: 1,
@@ -54,8 +54,15 @@ describe('safeRedirect', () => {
     ['javascript:', 'javascript:alert(1)'],
     ['page de connexion', '/connexion'],
     ['page de connexion avec query', '/connexion?redirect=/compte'],
+    ['page de connexion avec slash final', '/connexion/'],
+    ['page de connexion avec hash', '/connexion#formulaire'],
+    ['page de connexion en majuscules', '/Connexion'],
   ])('refuse une cible dangereuse ou inutile (%s)', (_label, target) => {
     expect(safeRedirect(target)).toBe('/')
+  })
+
+  it('accepte une page dont le nom commence par « connexion »', () => {
+    expect(safeRedirect('/connexions-recentes')).toBe('/connexions-recentes')
   })
 
   it('utilise le repli fourni', () => {
