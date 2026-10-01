@@ -10,7 +10,13 @@ const cart = useCartStore()
 
 /** Vraie 404 (statut HTTP compris) : page d'erreur rendue par le serveur, pas une page vide. */
 function notFound(): never {
-  throw createError({ statusCode: 404, statusMessage: 'Produit introuvable', fatal: true })
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Product not found',
+    // Titre affiché par error.vue (le statusMessage reste en ASCII : il part dans l'en-tête HTTP).
+    data: { title: 'Produit introuvable' },
+    fatal: true,
+  })
 }
 
 const id = parseProductId(route.params.id) ?? notFound()

@@ -4,11 +4,9 @@ import type { NuxtError } from '#app'
 const props = defineProps<{ error: NuxtError }>()
 
 const isNotFound = computed((): boolean => props.error.statusCode === 404)
-// « Produit introuvable » quand la fiche produit le précise, sinon un titre générique.
-const heading = computed((): string => {
-  if (!isNotFound.value) return 'Une erreur est survenue'
-  return props.error.statusMessage || 'Page introuvable'
-})
+// Titre en français fourni par la page (data.title), sinon générique : jamais le
+// statusMessage de Nuxt, en anglais pour une route inconnue (suite à la review de #36).
+const heading = computed((): string => errorPageTitle(props.error.statusCode, props.error.data))
 
 useSeoMeta({
   title: heading,
