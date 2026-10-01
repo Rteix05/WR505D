@@ -47,14 +47,26 @@ export interface Product {
   thumbnail: string
 }
 
-/** GET /products, /products/search et /products/category/{slug}. */
-export interface ProductsResponse {
-  products: Product[]
+/**
+ * GET /products, /products/search et /products/category/{slug}.
+ * `P` = forme des produits : complets par défaut, réduits avec `select` (`ProductSummary`).
+ */
+export interface ProductsResponse<P = Product> {
+  products: P[]
   /** Nombre total de résultats, toutes pages confondues. */
   total: number
   skip: number
   limit: number
 }
+
+/**
+ * Champs d'un produit nécessaires à une carte du catalogue et au filtrage local
+ * (catégorie, prix). Demandés avec `select` : ~7 Ko compressés pour les 194 produits.
+ */
+export type ProductSummary = Pick<
+  Product,
+  'id' | 'title' | 'price' | 'rating' | 'discountPercentage' | 'thumbnail' | 'category'
+>
 
 /** Élément de GET /products/categories. */
 export interface Category {
