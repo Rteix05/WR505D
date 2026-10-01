@@ -12,7 +12,12 @@ const filters = computed((): CatalogFilters => parseCatalogQuery(route.query))
 
 // Formulaire de filtres envoyé sans JavaScript (?category=…&sort=…) : on redirige vers
 // l'URL canonique (sortBy + order, valeurs par défaut omises). Une vue = une URL.
-if (SORT_FORM_PARAM in route.query) {
+// Idem pour la recherche envoyée vide (`?q=`) ou avec des espaces (`?q=+phone+`).
+const rawSearch = route.query.q
+if (
+  SORT_FORM_PARAM in route.query ||
+  (typeof rawSearch === 'string' && rawSearch !== filters.value.q)
+) {
   await navigateTo({ path: '/produits', query: toCatalogQuery(filters.value) }, { replace: true })
 }
 
@@ -22,17 +27,30 @@ const { data: categories } = await useAsyncData('categories', () => api.getCateg
 
 // Exécuté côté serveur au premier affichage (le HTML contient déjà les produits,
 // même sans JavaScript), puis côté client à chaque changement de l'URL.
+//
+// Anti-race : si l'URL change pendant une requête (recherche « pho » puis « phone »),
+// `dedupe: 'cancel'` annule la précédente et ignore sa réponse. Son `signal` est passé
+// à l'API : la requête réseau elle-même est interrompue, pas seulement son résultat.
 const { data, status, error, refresh } = await useAsyncData<ProductsResponse>(
   'catalogue',
-  () => {
+  async (_nuxtApp, { signal }) => {
     const current = filters.value
-    const params = { ...paginationParams(current.page), ...sortParams(current) }
+    const sort = sortParams(current)
+    const params = { ...paginationParams(current.page), ...sort, signal }
+
+    // Recherche + catégorie : l'API ne sait pas les combiner. Tous les résultats de la
+    // recherche (déjà triés par l'API) sont filtrés et paginés ici.
+    if (needsLocalFiltering(current)) {
+      const all = await api.searchProducts(current.q, { limit: 0, ...sort, signal })
+      return localPage(filterLocally(all.products, current), current.page)
+    }
+    if (current.q) return api.searchProducts(current.q, params)
     // DummyJSON a une route dédiée par catégorie ; le tri et la pagination s'y appliquent aussi.
     return current.category
       ? api.getProductsByCategory(current.category, params)
       : api.getProducts(params)
   },
-  { watch: [filters] },
+  { watch: [filters], dedupe: 'cancel' },
 )
 
 const page = computed((): number => filters.value.page)
@@ -50,8 +68,9 @@ const statusMessage = computed((): string => {
   if (loading.value) return 'Chargement des produits…'
   if (error.value || products.value.length === 0) return ''
   const count = `${total.value} produit${total.value > 1 ? 's' : ''}`
+  const search = filters.value.q ? ` pour « ${filters.value.q} »` : ''
   const where = currentCategory.value ? ` dans ${currentCategory.value.name}` : ''
-  return `${count}${where}, page ${page.value} sur ${totalPages.value}`
+  return `${count}${search}${where}, page ${page.value} sur ${totalPages.value}`
 })
 
 async function applyFilters(changes: Partial<CatalogFilters>): Promise<void> {
@@ -59,16 +78,39 @@ async function applyFilters(changes: Partial<CatalogFilters>): Promise<void> {
   await navigateTo({ query: toCatalogQuery(updateFilters(filters.value, changes)) })
 }
 
-// Après un changement de page, le focus revient sur le titre (et la vue remonte) :
-// sinon un utilisateur clavier resterait en bas, sur un lien qui a changé de sens.
+async function applySearch(q: string): Promise<void> {
+  // Une seule entrée d'historique par recherche : la première frappe ajoute une entrée,
+  // les suivantes la remplacent. Sinon « Précédent » repasserait par « p », « ph », « pho »…
+  await navigateTo(
+    { query: toCatalogQuery(updateFilters(filters.value, { q })) },
+    { replace: filters.value.q !== '' },
+  )
+}
+
+/** Lien « Effacer la recherche » : garde la catégorie, le tri et les prix. */
+const withoutSearch = computed(() => ({
+  query: toCatalogQuery(updateFilters(filters.value, { q: '' })),
+}))
+
+// Après un changement de page (pagination), le focus revient sur le titre (et la vue
+// remonte) : sinon un utilisateur clavier resterait en bas, sur un lien qui a changé de sens.
+// Pas quand la page revient à 1 à cause d'une recherche : le focus doit rester dans le champ.
 const heading = ref<HTMLHeadingElement | null>(null)
-watch(page, async () => {
+watch(filters, async (next, previous) => {
+  const samePageFilters =
+    JSON.stringify(toCatalogQuery({ ...next, page: 1 })) ===
+    JSON.stringify(toCatalogQuery({ ...previous, page: 1 }))
+  if (next.page === previous.page || !samePageFilters) return
   await nextTick()
   heading.value?.focus()
 })
 
 const title = computed((): string => {
-  const name = currentCategory.value ? `Produits : ${currentCategory.value.name}` : 'Produits'
+  const parts = [
+    filters.value.q ? `Recherche « ${filters.value.q} »` : 'Produits',
+    currentCategory.value?.name,
+  ].filter(Boolean)
+  const name = parts.join(' : ')
   return page.value > 1 ? `${name}, page ${page.value}` : name
 })
 const canonical = computed((): string => {
@@ -83,6 +125,9 @@ useSeoMeta({
   ogDescription: 'Tout le catalogue ChampaShop : beauté, high-tech, maison, mode et plus encore.',
   ogType: 'website',
   ogUrl: canonical,
+  // Les pages de résultats de recherche ne sont pas indexées (une par mot tapé, contenu
+  // en double) ; les liens vers les produits restent suivis.
+  robots: () => (filters.value.q ? 'noindex, follow' : undefined),
 })
 useHead({ link: [{ rel: 'canonical', href: canonical }] })
 </script>
@@ -94,6 +139,7 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
     <!-- Toujours présente : une zone de statut n'est annoncée que si elle existait déjà. -->
     <p class="catalogue__status" role="status">{{ statusMessage }}</p>
 
+    <CatalogSearch :filters="filters" @search="applySearch" />
     <CatalogToolbar :filters="filters" :categories="categories" @apply="applyFilters" />
 
     <div v-if="error && !loading" class="catalogue__message" role="alert">
@@ -103,10 +149,23 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
 
     <div v-else-if="!loading && products.length === 0" class="catalogue__message">
       <p v-if="outOfRange">Cette page n'existe pas : le catalogue compte {{ totalPages }} pages.</p>
+      <p v-else-if="filters.q">
+        Aucun produit ne correspond à « {{ filters.q }} »{{
+          currentCategory ? ` dans ${currentCategory.name}` : ''
+        }}.
+      </p>
       <p v-else-if="filters.category">Aucun produit dans cette catégorie.</p>
       <p v-else>Aucun produit à afficher pour le moment.</p>
       <NuxtLink v-if="outOfRange" to="/produits" class="catalogue__button" :aria-current="false">
         Revenir à la première page
+      </NuxtLink>
+      <NuxtLink
+        v-else-if="filters.q"
+        :to="withoutSearch"
+        class="catalogue__button"
+        :aria-current="false"
+      >
+        Effacer la recherche
       </NuxtLink>
       <NuxtLink
         v-else-if="filters.category"
