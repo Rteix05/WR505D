@@ -100,6 +100,8 @@ Connexion DummyJSON, jetons en cookies, utilisateur chargé côté serveur (pas 
 
 Les appels authentifiés passent par `$authFetch` : sur une 401, le jeton est rafraîchi une seule fois (single-flight) même si plusieurs requêtes échouent en même temps, puis elles sont rejouées. Détails dans [docs/refresh-token.md](docs/refresh-token.md).
 
+`/compte` est protégée par le middleware `auth` : un visiteur déconnecté est redirigé vers `/connexion?redirect=…`, puis ramené sur la page demandée après connexion. « Se déconnecter » supprime les cookies et l'utilisateur du store, puis renvoie à l'accueil. Détails dans [docs/pages-privees.md](docs/pages-privees.md).
+
 Pour tester l'expiration du jeton : `NUXT_PUBLIC_AUTH_EXPIRES_IN_MINS=1 npm run dev`.
 
 ### URL du catalogue
