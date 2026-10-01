@@ -80,7 +80,7 @@ Sur GitHub, « Compare & pull request » :
 
 - **base : `develop`** (jamais `main`) ;
 - remplir le template, écrire `Closes #1` (l'issue se fermera au merge) ;
-- label `feature`, milestone « Semaine 1 », s'assigner la PR ;
+- label `feature`, milestone de la semaine en cours (« Semaine 2 »…), s'assigner la PR ;
 - demander une review à un coéquipier.
 
 Il faut la CI verte et 1 approbation : on ne peut pas merger sa propre PR sans.
@@ -186,6 +186,8 @@ git push -u origin hotfix/<description>
 - `npm version patch` et pas `npm version X.Y.Z+1` : npm lit `+1` comme une métadonnée de build (SemVer), pas comme une addition, et répond « Version not changed ».
 - `git add` explicite et pas `git commit -am` : `-a` ignore les **nouveaux** fichiers, le test qui reproduit le bug ne serait pas commité.
 
+**Hotfix imposé (semaine 2)** : l'enseignant ouvre une issue `bug-prod` à un moment non annoncé, l'équipe a **24 heures ouvrées**. Assigner l'issue à un membre et la faire relire par un autre. Créer la branche **depuis `main`, jamais depuis `develop`** : le travail en cours de `develop` ne doit pas partir en production, c'est vérifié dans le graphe Git. Le test qui reproduit le bug (non-régression) est obligatoire, et il faut vérifier le site déployé après le merge.
+
 PR `hotfix/<description>` → `main` (label `bug-prod`), merge, tag annoté de la nouvelle version (celle affichée par `npm version patch`, ex. `v0.1.1`) et GitHub Release comme à l'étape 3, puis PR `hotfix/<description>` → `develop` pour ne pas perdre la correction.
 
 ### À ne jamais faire
@@ -253,7 +255,7 @@ Barème : « parcours complet vert en CI ». Le job « E2E Playwright » de la C
 
 ## Pull Request (quand l'étudiant la demande)
 
-- Vers `develop`, template rempli, `Closes #<n°>`, labels, milestone « Semaine 1 », assignée à l'étudiant.
+- Vers `develop`, template rempli, `Closes #<n°>`, labels, milestone de la semaine en cours, assignée à l'étudiant.
 - Ne cocher une case de la checklist que si c'est vraiment fait (ex. « Testé au clavier »).
 - `develop` et `main` sont protégées : 1 approbation d'un coéquipier + CI verte, même pour les admins. Merge avec « Create a merge commit », branche supprimée après.
 
@@ -287,33 +289,33 @@ Dans `develop` (issues #1, #2, #7, #10 et #12 mergées), sauf mention contraire.
 
 Déconnexion (#11) : `useAuthStore().logout()` (cookies et utilisateur vidés, retour à l'accueil). Choix expliqués dans `docs/promotions.md`, `docs/authentification.md`, `docs/refresh-token.md`, `docs/catalogue-url.md` et `docs/store-auth.md`.
 
-## Qui attend qui
+## Qui attend qui (semaine 2)
 
-| Issue                     | Responsable | Attend                           | Débloque            |
-| ------------------------- | ----------- | -------------------------------- | ------------------- |
-| #1 Types + client API     | Radouan     | mergée                           | #2, #4, #6          |
-| #2 Catalogue `/produits`  | Radouan     | mergée                           | #3, #4, #5          |
-| #3 Recherche debounce     | Radouan     | PR ouverte                       | #5 (filtrage local) |
-| #5 Filtre prix            | Radouan     | PR ouverte (après #3)            | —                   |
-| #7 Promotions             | Rafael      | mergée                           | #8, #9              |
-| #10 Connexion             | Rafael      | mergée                           | #11, #12            |
-| #12 Refresh token         | Rafael      | mergée                           | client API de #1    |
-| #4 Filtres, tri, URL      | Rafael      | mergée                           | —                   |
-| #6 Fiche produit          | Marwan      | rien ; bouton « Ajouter » via #8 | —                   |
-| #8 Store panier           | Marwan      | #7                               | #6 (bouton), #9     |
-| #9 Page panier            | Marwan      | #7, #8                           | —                   |
-| #11 Middleware, `/compte` | Marwan      | rien (#10 et #12 mergées)        | —                   |
+Semaine 1 : toutes les issues mergées, release v0.1.0 publiée (tag, GitHub Release, production à jour).
+
+| Issue                                                | Responsable | Attend                         | Débloque   |
+| ---------------------------------------------------- | ----------- | ------------------------------ | ---------- |
+| #44 Logique pure du comparateur                      | Rafael      | rien                           | #46, #47   |
+| #45 Client API : plusieurs produits par identifiants | Radouan     | rien                           | #47, #50   |
+| #49 Logique pure des vus récemment                   | Marwan      | rien                           | #50        |
+| #46 Sélection du comparateur (cookie, bouton, barre) | Marwan      | #44                            | #47        |
+| #47 Page `/comparer` (URL source de vérité)          | Rafael      | #44, #45 ; #46 pour le cookie  | #48 (page) |
+| #48 Tableau comparatif                               | Radouan     | rien (composant à props) ; #47 | —          |
+| #50 Vus récemment (cookie, accueil, fiche)           | Marwan      | #45, #49                       | —          |
+| #51 Release v0.2.0                                   | Radouan     | toutes les autres + hotfix     | —          |
+| #52 Organisation de la semaine 2                     | Rafael      | rien                           | —          |
+| Hotfix v0.1.1 (issue `bug-prod` de l'enseignant)     | à assigner  | —                              | #51        |
 
 ## Ordre de travail et coordination
 
-1. Radouan : #3 puis #5 (#1 et #2 mergées), en lisant les filtres avec `parseCatalogQuery` de #4.
-2. Marwan : #8 puis #9, #11 et #6 : tout est débloqué.
-3. Rafael : toutes ses issues mergées ; séance 7 (#32), relire les PR de l'équipe, préparer la release.
-4. Fin de semaine : `release/v0.1.0`, merge dans `main` et `develop`, tag `v0.1.0` et GitHub Release.
+1. En premier, en parallèle : #44 (Rafael), #45 (Radouan), #49 (Marwan) : les trois briques dont tout dépend.
+2. Puis : #46 (Marwan) dès #44 ; #47 (Rafael) dès #44 et #45 ; #48 (Radouan) en composant à props dès le début, branché dans #47 ensuite ; #50 (Marwan) dès #45 et #49.
+3. Hotfix : dès que l'issue `bug-prod` apparaît, il passe avant tout le reste (24 h).
+4. Fin de semaine : #51, release v0.2.0 (Radouan), selon la procédure de release.
 
 À caler ensemble :
 
-- Noms des query params du catalogue (proposition : `page`, `q`, `category`, `sortBy`, `order`, `minPrice`, `maxPrice`), communs à #3, #4 et #5.
-- Deux clients, un par usage : `useApi()` pour les routes publiques, `$authFetch` pour ce qui exige d'être connecté. Les deux lisent `runtimeConfig.public.apiBase`.
-- Cookie panier (#8) : seulement `productId`, `quantity` et le nécessaire pour `CartLine`, sous 4 Ko.
-- Prix toujours convertis avec `toCents` avant `computeCart`.
+- Nom des cookies imposés par le sujet : `compare` et `recently_viewed`, **identifiants uniquement**.
+- **Une seule ref par cookie** : comme `useAuthCookies` (voir `docs/refresh-token.md`), lire et écrire chaque cookie via une seule instance (un store Pinia ou un composable mis en cache), sinon deux `useCookie('compare')` se désynchronisent.
+- Valider tout cookie à la lecture (il vient du navigateur) : jamais d'erreur, valeur par défaut, réinitialisation (modèle : `parseCart` dans `utils/cart.ts`).
+- Chargement de plusieurs produits : une seule méthode, `getProductsByIds` (#45), pour le comparateur, les vus récemment et le panier.
