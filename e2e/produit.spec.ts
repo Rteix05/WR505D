@@ -126,6 +126,16 @@ test.describe('Fiche produit /produits/[id]', () => {
   }
 })
 
+// Suite à la review de #36 : error.vue est globale, une route inconnue ne doit pas
+// afficher le message anglais de Nuxt (« Page not found: /… »).
+test('route inconnue : 404 avec un titre en français', async ({ page }) => {
+  const response = await page.goto('/nexiste-pas')
+  expect(response?.status()).toBe(404)
+  await expect(page.getByRole('heading', { level: 1, name: 'Page introuvable' })).toBeVisible()
+  await expect(page).toHaveTitle('Page introuvable · ChampaShop')
+  await expect(page.getByText(/not found/i)).toHaveCount(0)
+})
+
 test.describe('Fiche produit sans JavaScript (rendu serveur)', () => {
   test.use({ javaScriptEnabled: false })
 

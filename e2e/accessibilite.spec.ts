@@ -13,6 +13,7 @@ const PAGES = [
   '/produits/9',
   '/produits/117',
   '/produits/99999',
+  '/nexiste-pas',
 ]
 
 for (const path of PAGES) {
