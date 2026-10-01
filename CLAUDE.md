@@ -151,7 +151,7 @@ Onglet « Files changed » : commenter les lignes (pourquoi ce choix ? cas limit
 ## Stores Pinia (séance 7 du cours)
 
 - Setup syntax : state = `ref`, getters = `computed`, actions = fonctions ; types de retour explicites.
-- Authentification dans les composants : **`useAuthStore()`** (`user`, `token`, `isAuthenticated`, `login()`, `logout()`). Il réutilise `useUserStore`, `useAuthCookies` et `useAuth().login` : ne pas recréer ces briques.
+- Authentification dans les composants : **`useAuthStore()`** (`user`, `token`, `isAuthenticated`, `login()`, `logout()`). Il réutilise `useUserStore`, `useAuthCookies` et `useAuth().login` : ne pas recréer ces briques. Une seule déconnexion : `useAuthStore().logout()` (#34) ; le middleware lit `useAuthStore().isAuthenticated`.
 - Déstructurer un store avec `storeToRefs(useXStore())`, jamais `const { x } = useXStore()` (perte de réactivité).
 - Persistance : `pinia-plugin-persistedstate` (le paquet du cours, `@pinia-plugin-persistedstate/nuxt`, est abandonné). Stockage cookie par défaut (lu au rendu serveur). Toujours `persist: { pick: [...] }` avec le strict nécessaire ; **jamais** de jeton, mot de passe ou profil complet dans un store persisté.
 - Les jetons restent dans `useAuthCookies` (durées différentes, ref partagée avec le refresh) ; le panier garde son cookie compact (tuples < 4 Ko).
@@ -161,6 +161,7 @@ Onglet « Files changed » : commenter les lignes (pourquoi ce choix ? cas limit
 ## Avant de dire « fini »
 
 - `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm run test:coverage`, `npm run build` : tout vert.
+- Juger sur le **code de retour** (`npm run lint && npm run typecheck && …`), jamais sur un extrait de la sortie : un `| tail -1` a déjà masqué une erreur ESLint (`import/first`) qui n'a été vue qu'en CI.
 - Tester dans le vrai site (`npm run dev`) ce qui peut l'être ; dire clairement ce qui n'a pas été testé.
 - Une page ou un parcours ajouté ou modifié : ajouter ou adapter son parcours Playwright, puis `npm run test:e2e` (voir ci-dessous).
 

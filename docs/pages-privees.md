@@ -1,6 +1,6 @@
 # Pages privées : middleware, `/compte` et déconnexion
 
-Issue #11. Fichiers : `middleware/auth.ts`, `pages/compte.vue`, `composables/useAuth.ts` (`logout`), `utils/auth.ts` (`loginRedirectLocation`), `layouts/default.vue`, `tests/unit/auth.spec.ts`.
+Issue #11. Fichiers : `middleware/auth.ts`, `pages/compte.vue`, `stores/auth.ts` (`logout`, depuis #34), `utils/auth.ts` (`loginRedirectLocation`), `layouts/default.vue`, `tests/unit/auth.spec.ts`.
 
 S'appuie sur la connexion (#10, [docs/authentification.md](authentification.md)) et le refresh du jeton (#12, [docs/refresh-token.md](refresh-token.md)).
 
@@ -39,7 +39,9 @@ Cas limite : un jeton invalide ou expiré sans refresh possible. `loadUser()` vi
 - **Pas de nouvelle validation** : la page `/connexion` (#10) passe déjà `?redirect=` dans `safeRedirect()`, qui refuse les redirections vers un autre site (open redirect). Un test vérifie que **tout ce que le middleware envoie est accepté tel quel par `safeRedirect`**, sinon l'utilisateur atterrirait sur l'accueil après s'être connecté.
 - Déjà connecté sur `/connexion?redirect=…` : la page redirige directement vers la cible (déjà géré par #10).
 
-## 4. Déconnexion : `logout()` dans `useAuth()`
+## 4. Déconnexion : `logout()` dans le store `auth`
+
+> Depuis #34, la déconnexion écrite ici dans `useAuth()` a été déplacée telle quelle dans `useAuthStore().logout()` (séance 7, #32) : les deux faisaient la même chose, il n'en reste qu'une. La page `/compte` appelle `auth.logout()` et le middleware lit `useAuthStore().isAuthenticated`. Le raisonnement ci-dessous reste valable.
 
 ```ts
 cookies.clear() // accessToken et refreshToken mis à null → cookies supprimés
@@ -47,7 +49,7 @@ store.setUser(null) // l'en-tête repasse à « Connexion »
 await navigateTo('/', { replace: true })
 ```
 
-- **Dans `useAuth()`** et pas dans la page : c'est l'inverse de `login()`, et l'en-tête ou une autre page pourront l'appeler.
+- **Dans le store** et pas dans la page : c'est l'inverse de `login()`, et l'en-tête ou une autre page pourront l'appeler.
 - **Les deux sont vidés** : les cookies seuls ne suffisent pas (le store garderait l'utilisateur affiché jusqu'au prochain rechargement), le store seul non plus (au prochain rendu serveur, le plugin rechargerait l'utilisateur depuis les cookies).
 - **`useAuthCookies()` et pas un nouveau `useCookie`** : une seule instance par application (voir le commentaire de `useAuthCookies.ts`). Un second `useCookie('accessToken')` serait une autre ref, et le vrai jeton pourrait être réécrit après la déconnexion.
 - **`replace: true`** : après la déconnexion, « Précédent » ne ramène pas sur `/compte`. Sinon, le middleware renverrait vers la connexion, ce qui serait déroutant.

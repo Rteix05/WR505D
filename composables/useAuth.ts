@@ -6,7 +6,6 @@ export interface UseAuth {
   isLoggedIn: ComputedRef<boolean>
   login: (credentials: LoginCredentials) => Promise<void>
   loadUser: () => Promise<void>
-  logout: () => Promise<void>
 }
 
 export function useAuth(): UseAuth {
@@ -44,22 +43,10 @@ export function useAuth(): UseAuth {
     }
   }
 
-  /**
-   * Supprime les jetons et l'utilisateur, puis retour à l'accueil.
-   * DummyJSON n'a pas de route de révocation : sans cookie, plus aucun appel authentifié possible.
-   * `replace` : le bouton « Précédent » ne ramène pas sur la page privée qu'on vient de quitter.
-   */
-  async function logout(): Promise<void> {
-    cookies.clear()
-    store.setUser(null)
-    await navigateTo('/', { replace: true })
-  }
-
   return {
     user: computed(() => store.user),
     isLoggedIn: computed(() => store.isLoggedIn),
     login,
     loadUser,
-    logout,
   }
 }
