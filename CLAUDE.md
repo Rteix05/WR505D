@@ -148,6 +148,16 @@ Onglet « Files changed » : commenter les lignes (pourquoi ce choix ? cas limit
 - SEO : `useSeoMeta` sur chaque page, rendu SSR.
 - Commentaires courts qui expliquent le **pourquoi**.
 
+## Stores Pinia (séance 7 du cours)
+
+- Setup syntax : state = `ref`, getters = `computed`, actions = fonctions ; types de retour explicites.
+- Authentification dans les composants : **`useAuthStore()`** (`user`, `token`, `isAuthenticated`, `login()`, `logout()`). Il réutilise `useUserStore`, `useAuthCookies` et `useAuth().login` : ne pas recréer ces briques.
+- Déstructurer un store avec `storeToRefs(useXStore())`, jamais `const { x } = useXStore()` (perte de réactivité).
+- Persistance : `pinia-plugin-persistedstate` (le paquet du cours, `@pinia-plugin-persistedstate/nuxt`, est abandonné). Stockage cookie par défaut (lu au rendu serveur). Toujours `persist: { pick: [...] }` avec le strict nécessaire ; **jamais** de jeton, mot de passe ou profil complet dans un store persisté.
+- Les jetons restent dans `useAuthCookies` (durées différentes, ref partagée avec le refresh) ; le panier garde son cookie compact (tuples < 4 Ko).
+- Un store se teste dans `tests/nuxt/` (`setActivePinia(createPinia())`, `mockNuxtImport` pour les requêtes et `navigateTo`). Détails : `docs/store-auth.md`.
+- Séance de cours fournie par l'étudiant : lire la page, vérifier que les paquets cités sont maintenus (`npm view <paquet> deprecated`), adapter au projet ChampaShop et documenter la correspondance cours ↔ projet dans `docs/`.
+
 ## Avant de dire « fini »
 
 - `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm run test:coverage`, `npm run build` : tout vert.
@@ -199,23 +209,24 @@ Ne jamais coller de token, mot de passe ou fichier `.env` dans une conversation.
 
 Dans `develop` (issues #1, #2, #7, #10 et #12 mergées), sauf mention contraire.
 
-| Élément                                                                                              | Fichier                                                   | Sert à                                                                                                           | Pour              |
-| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------- |
-| `computeCart(lines, promoCode?)`                                                                     | `utils/promotions.ts`                                     | Récapitulatif panier : brut, remises, livraison, total, `messages`                                               | #8, #9            |
-| `CartLine`, `CartSummary`, `AppliedDiscount`                                                         | `types/promotions.ts`                                     | Types imposés par le sujet, montants en centimes                                                                 | #8, #9            |
-| `toCents`, `formatCents`                                                                             | `utils/price.ts`                                          | Prix DummyJSON → centimes, affichage « 19,99 € »                                                                 | #2, #6, #9        |
-| `useAuth()`                                                                                          | `composables/useAuth.ts`                                  | `user`, `isLoggedIn`, `login()`, `loadUser()`                                                                    | #11               |
-| `useUserStore()`                                                                                     | `stores/user.ts`                                          | Utilisateur connecté, `setUser(null)` pour vider                                                                 | #11               |
-| `useAuthCookies()`                                                                                   | `composables/useAuthCookies.ts`                           | Cookies des jetons, `clear()` pour la déconnexion                                                                | #11               |
-| `safeRedirect()`                                                                                     | `utils/auth.ts`                                           | Valide `?redirect=` ; `/connexion` le gère déjà                                                                  | #11               |
-| `$authFetch`                                                                                         | `plugins/01.api.ts`                                       | **Seulement** les routes qui exigent d'être connecté (sans jeton : `SessionExpiredError`) ; refresh auto sur 401 | #8 (paniers), #11 |
-| `Product`, `ProductsResponse`, `Category`, `User`, `AuthTokens`…                                     | `types/dummyjson.ts`                                      | Toutes les réponses DummyJSON                                                                                    | #2, #6, #8        |
-| `useApi()` : `getProducts`, `searchProducts`, `getProductsByCategory`, `getProduct`, `getCategories` | `composables/useApi.ts`                                   | Routes **publiques** (catalogue, fiche, catégories), `signal` pour annuler                                       | #2, #3, #5, #6    |
-| `pageFromQuery`, `paginationItems`, `discountBadge`, `formatRating`                                  | `utils/pagination.ts`, `utils/product.ts`                 | Lecture de `?page=`, pages visibles, badge et note                                                               | #3, #5, #6        |
-| `<ProductCard>`, `<ProductCardSkeleton>`, `<CatalogPagination>`                                      | `components/`                                             | Carte produit, squelette, pagination par liens (garde les autres query params)                                   | #3, #4, #5        |
-| `parseCatalogQuery`, `toCatalogQuery`, `updateFilters`, `paginationParams`, `sortParams`             | `utils/catalogQuery.ts` (branche `feature/4-filtres-url`) | Filtres du catalogue ↔ query params, validation, pagination                                                      | #2, #3, #5        |
+| Élément                                                                                              | Fichier                                   | Sert à                                                                                                           | Pour              |
+| ---------------------------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------- |
+| `computeCart(lines, promoCode?)`                                                                     | `utils/promotions.ts`                     | Récapitulatif panier : brut, remises, livraison, total, `messages`                                               | #8, #9            |
+| `CartLine`, `CartSummary`, `AppliedDiscount`                                                         | `types/promotions.ts`                     | Types imposés par le sujet, montants en centimes                                                                 | #8, #9            |
+| `toCents`, `formatCents`                                                                             | `utils/price.ts`                          | Prix DummyJSON → centimes, affichage « 19,99 € »                                                                 | #2, #6, #9        |
+| `useAuth()`                                                                                          | `composables/useAuth.ts`                  | `user`, `isLoggedIn`, `login()`, `loadUser()`                                                                    | #11               |
+| `useAuthStore()`                                                                                     | `stores/auth.ts`                          | **Point d'entrée auth** : `user`, `token`, `isAuthenticated`, `login()`, `logout()`, nom mémorisé (persisté)     | #11               |
+| `useUserStore()`                                                                                     | `stores/user.ts`                          | Utilisateur connecté, `setUser(null)` pour vider                                                                 | #11               |
+| `useAuthCookies()`                                                                                   | `composables/useAuthCookies.ts`           | Cookies des jetons, `clear()` pour la déconnexion                                                                | #11               |
+| `safeRedirect()`                                                                                     | `utils/auth.ts`                           | Valide `?redirect=` ; `/connexion` le gère déjà                                                                  | #11               |
+| `$authFetch`                                                                                         | `plugins/01.api.ts`                       | **Seulement** les routes qui exigent d'être connecté (sans jeton : `SessionExpiredError`) ; refresh auto sur 401 | #8 (paniers), #11 |
+| `Product`, `ProductsResponse`, `Category`, `User`, `AuthTokens`…                                     | `types/dummyjson.ts`                      | Toutes les réponses DummyJSON                                                                                    | #2, #6, #8        |
+| `useApi()` : `getProducts`, `searchProducts`, `getProductsByCategory`, `getProduct`, `getCategories` | `composables/useApi.ts`                   | Routes **publiques** (catalogue, fiche, catégories), `signal` pour annuler                                       | #2, #3, #5, #6    |
+| `paginationItems`, `discountBadge`, `formatRating`                                                   | `utils/pagination.ts`, `utils/product.ts` | Pages visibles, badge de remise et note                                                                          | #3, #5, #6        |
+| `<ProductCard>`, `<ProductCardSkeleton>`, `<CatalogPagination>`                                      | `components/`                             | Carte produit, squelette, pagination par liens (garde les autres query params)                                   | #3, #4, #5        |
+| `parseCatalogQuery`, `toCatalogQuery`, `updateFilters`, `paginationParams`, `sortParams`             | `utils/catalogQuery.ts`                   | Filtres du catalogue ↔ query params, validation, pagination                                                      | #2, #3, #5        |
 
-Déconnexion (#11) : `useAuthCookies().clear()`, `useUserStore().setUser(null)`, puis `navigateTo('/')`. Choix expliqués dans `docs/promotions.md`, `docs/authentification.md` et `docs/refresh-token.md`.
+Déconnexion (#11) : `useAuthStore().logout()` (cookies et utilisateur vidés, retour à l'accueil). Choix expliqués dans `docs/promotions.md`, `docs/authentification.md`, `docs/refresh-token.md`, `docs/catalogue-url.md` et `docs/store-auth.md`.
 
 ## Qui attend qui
 
@@ -228,7 +239,7 @@ Déconnexion (#11) : `useAuthCookies().clear()`, `useUserStore().setUser(null)`,
 | #7 Promotions             | Rafael      | mergée                           | #8, #9           |
 | #10 Connexion             | Rafael      | mergée                           | #11, #12         |
 | #12 Refresh token         | Rafael      | mergée                           | client API de #1 |
-| #4 Filtres, tri, URL      | Rafael      | rien (en cours, PR #22)          | —                |
+| #4 Filtres, tri, URL      | Rafael      | mergée                           | —                |
 | #6 Fiche produit          | Marwan      | rien ; bouton « Ajouter » via #8 | —                |
 | #8 Store panier           | Marwan      | #7                               | #6 (bouton), #9  |
 | #9 Page panier            | Marwan      | #7, #8                           | —                |
@@ -238,7 +249,7 @@ Déconnexion (#11) : `useAuthCookies().clear()`, `useUserStore().setUser(null)`,
 
 1. Radouan : #3 puis #5 (#1 et #2 mergées), en lisant les filtres avec `parseCatalogQuery` de #4.
 2. Marwan : #8 puis #9, #11 et #6 : tout est débloqué.
-3. Rafael : #4 (page `/produits` : catégorie et tri), suites de review (#25), relire les PR de l'équipe.
+3. Rafael : toutes ses issues mergées ; séance 7 (#32), relire les PR de l'équipe, préparer la release.
 4. Fin de semaine : `release/v0.1.0`, merge dans `main` et `develop`, tag `v0.1.0` et GitHub Release.
 
 À caler ensemble :

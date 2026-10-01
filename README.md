@@ -58,7 +58,7 @@ pages/          routes (catalogue, fiche produit, panier, connexion, compte)
 layouts/        gabarits de page
 components/     composants d'affichage (props et emits typés)
 composables/    logique réutilisable liée à Vue (fetch, debounce, auth)
-stores/         stores Pinia (panier, utilisateur)
+stores/         stores Pinia (auth, utilisateur, panier) ; persistance pinia-plugin-persistedstate
 utils/          fonctions pures TypeScript, sans Vue ni Pinia (promotions, filtres, prix)
 types/          types partagés, dont les réponses DummyJSON (types/dummyjson.ts)
 middleware/     middleware de route (auth)
@@ -89,6 +89,10 @@ Réponses DummyJSON typées dans `types/dummyjson.ts` à partir des réponses r�
 ### Catalogue
 
 `/produits` : 12 produits par page, page courante dans l'URL (`?page=`), rendu serveur (fonctionne sans JavaScript), squelettes, erreur avec « Réessayer ». Choix détaillés dans [docs/catalogue.md](docs/catalogue.md).
+
+### Store d'authentification (séance 7)
+
+`useAuthStore` (setup store : state, getters, actions) regroupe l'authentification pour les composants ; le nom de la dernière connexion est persisté en cookie par `pinia-plugin-persistedstate` et pré-remplit `/connexion` dès le rendu serveur. Détails dans [docs/store-auth.md](docs/store-auth.md).
 
 ### Moteur de promotions
 
