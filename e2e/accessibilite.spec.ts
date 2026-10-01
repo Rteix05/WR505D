@@ -10,6 +10,10 @@ const PAGES = [
   '/produits?page=2',
   '/produits?category=beauty&sortBy=price&order=desc',
   '/connexion',
+  '/produits/9',
+  '/produits/117',
+  '/produits/99999',
+  '/nexiste-pas',
 ]
 
 for (const path of PAGES) {
