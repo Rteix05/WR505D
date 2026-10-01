@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   COMPARE_MAX,
   formatCompareIds,
+  isCanonicalCompareQuery,
   isSameCompareSelection,
   parseCompareIds,
+  sortCompareResults,
   toggleCompare,
 } from '../../utils/compare'
 
@@ -137,5 +139,65 @@ describe('isSameCompareSelection', () => {
 
   it('deux sélections vides : identiques', () => {
     expect(isSameCompareSelection([], [])).toBe(true)
+  })
+})
+
+describe('isCanonicalCompareQuery', () => {
+  it('forme canonique : rien à normaliser', () => {
+    expect(isCanonicalCompareQuery('3,17,42', [3, 17, 42])).toBe(true)
+    expect(isCanonicalCompareQuery(undefined, [])).toBe(true)
+  })
+
+  it.each([
+    ['doublon', '3,3,17', [3, 17]],
+    ['invalide', 'abc,3', [3]],
+    ['espaces', ' 3,17', [3, 17]],
+    ['élément vide', '3,,17', [3, 17]],
+    ['paramètre répété', ['3', '17'], [3, 17]],
+    ['paramètre vide', '', []],
+    ['tout invalide', 'abc', []],
+    ['produit inexistant retiré après chargement', '3,999999', [3]],
+  ])('à normaliser (%s)', (_label, raw, ids) => {
+    expect(isCanonicalCompareQuery(raw, ids)).toBe(false)
+  })
+})
+
+describe('sortCompareResults', () => {
+  const statusOf = (error: unknown): number | undefined =>
+    typeof error === 'object' && error !== null && 'statusCode' in error
+      ? Number(error.statusCode)
+      : undefined
+
+  it('sépare produits chargés, inexistants (404) et échecs, dans l’ordre', () => {
+    const results: PromiseSettledResult<string>[] = [
+      { status: 'fulfilled', value: 'produit 3' },
+      { status: 'rejected', reason: { statusCode: 404 } },
+      { status: 'rejected', reason: new TypeError('fetch failed') },
+      { status: 'fulfilled', value: 'produit 8' },
+    ]
+    expect(sortCompareResults([3, 999, 42, 8], results, statusOf)).toEqual({
+      products: ['produit 3', 'produit 8'],
+      missingIds: [999],
+      failedIds: [42],
+    })
+  })
+
+  it('une erreur serveur n’est pas un produit inexistant : il reste dans l’URL', () => {
+    const results: PromiseSettledResult<string>[] = [
+      { status: 'rejected', reason: { statusCode: 500 } },
+    ]
+    expect(sortCompareResults([3], results, statusOf)).toEqual({
+      products: [],
+      missingIds: [],
+      failedIds: [3],
+    })
+  })
+
+  it('aucun identifiant : rien à charger', () => {
+    expect(sortCompareResults([], [], statusOf)).toEqual({
+      products: [],
+      missingIds: [],
+      failedIds: [],
+    })
   })
 })

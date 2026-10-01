@@ -83,3 +83,41 @@ export function formatCompareIds(ids: number[]): string | null {
 export function isSameCompareSelection(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((id) => b.includes(id))
 }
+
+/**
+ * `?ids=` est-il déjà sous sa forme canonique ? Sinon la page normalise l'URL
+ * (`navigateTo(…, { replace: true })`). Une sélection vide s'écrit sans paramètre.
+ * Un paramètre répété (tableau) n'est jamais canonique.
+ */
+export function isCanonicalCompareQuery(raw: unknown, ids: number[]): boolean {
+  const canonical = formatCompareIds(ids)
+  return canonical === null ? raw === undefined : raw === canonical
+}
+
+export interface CompareLoadResult<T> {
+  /** Produits chargés, dans l'ordre de la sélection. */
+  products: T[]
+  /** Identifiants inconnus de l'API (404) : à retirer de l'URL. */
+  missingIds: number[]
+  /** Échecs d'une autre nature (réseau, 500) : le produit existe peut-être, on le garde dans l'URL. */
+  failedIds: number[]
+}
+
+/**
+ * Trie les résultats des appels parallèles (`Promise.allSettled`, un par identifiant, même ordre).
+ * L'échec d'un produit n'empêche jamais l'affichage des autres.
+ */
+export function sortCompareResults<T>(
+  ids: number[],
+  results: PromiseSettledResult<T>[],
+  statusOf: (error: unknown) => number | undefined,
+): CompareLoadResult<T> {
+  const outcome: CompareLoadResult<T> = { products: [], missingIds: [], failedIds: [] }
+  ids.forEach((id, index) => {
+    const result = results[index]
+    if (result?.status === 'fulfilled') outcome.products.push(result.value)
+    else if (statusOf(result?.reason) === 404) outcome.missingIds.push(id)
+    else outcome.failedIds.push(id)
+  })
+  return outcome
+}
