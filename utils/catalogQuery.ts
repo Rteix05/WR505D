@@ -71,8 +71,11 @@ function parsePage(value: string | undefined): number {
   return Number.isSafeInteger(page) && page >= 1 ? page : DEFAULT_FILTERS.page
 }
 
-/** Prix en euros, positif ou nul, 2 décimales au plus (`10`, `10.5`, `10,50`). */
-function parsePrice(value: string | undefined): number | null {
+/**
+ * Prix en euros, positif ou nul, 2 décimales au plus (`10`, `10.5`, `10,50`).
+ * Exportée pour les champs de prix (#5) : mêmes règles dans l'URL et dans le formulaire.
+ */
+export function parsePrice(value: string | undefined): number | null {
   if (value === undefined) return null
   const normalized = value.trim().replace(',', '.')
   // La regex n'accepte que des chiffres : Number() donne toujours un nombre fini.

@@ -107,7 +107,7 @@ Le menu de tri envoie une seule valeur (`sort=rating-desc`), qui ne correspond p
 /produits?category=beauty&sortBy=rating&order=desc
 ```
 
-`toCatalogQuery` n'écrit jamais `sort` : une seule URL par vue reste la règle. La recherche (#3) et les prix (#5) sont renvoyés en champs cachés, pour ne pas être perdus.
+`toCatalogQuery` n'écrit jamais `sort` : une seule URL par vue reste la règle. La recherche (#3) est renvoyée en champ caché, pour ne pas être perdue ; les prix (#5) sont de vrais champs du formulaire.
 
 **Avec JavaScript**, `@submit.prevent` intercepte l'envoi : le composant émet `apply` avec les nouveaux filtres, la page calcule `updateFilters` (retour page 1) puis `navigateTo({ query: toCatalogQuery(...) })`. L'URL change, la page se recalcule, pas de rechargement.
 

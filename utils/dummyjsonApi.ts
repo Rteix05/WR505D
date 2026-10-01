@@ -1,5 +1,5 @@
 import type { SortField, SortOrder } from '../types/catalog'
-import type { Category, Product, ProductsResponse } from '../types/dummyjson'
+import type { Category, Product, ProductSummary, ProductsResponse } from '../types/dummyjson'
 
 export interface ApiRequestOptions {
   query?: Record<string, string | number>
@@ -19,12 +19,33 @@ export interface ProductListParams {
   signal?: AbortSignal
 }
 
+/** Recherche et catégorie dont on veut tous les produits (filtrage local, #3 et #5). */
+export interface ProductScope {
+  q: string
+  category: string | null
+}
+
+/** Champs demandés avec `select` : ceux de `ProductSummary`, et rien d'autre. */
+export const PRODUCT_SUMMARY_FIELDS = [
+  'id',
+  'title',
+  'price',
+  'rating',
+  'discountPercentage',
+  'thumbnail',
+  'category',
+] as const satisfies readonly (keyof ProductSummary)[]
+
 export interface DummyJsonApi {
   getProducts: (params?: ProductListParams) => Promise<ProductsResponse>
   searchProducts: (q: string, params?: ProductListParams) => Promise<ProductsResponse>
   getProductsByCategory: (slug: string, params?: ProductListParams) => Promise<ProductsResponse>
   getProduct: (id: number, options?: { signal?: AbortSignal }) => Promise<Product>
   getCategories: () => Promise<Category[]>
+  getAllProductSummaries: (
+    scope: ProductScope,
+    params?: Omit<ProductListParams, 'limit' | 'skip'>,
+  ) => Promise<ProductsResponse<ProductSummary>>
 }
 
 /** Paramètres de liste → query DummyJSON, sans les clés non renseignées. */
@@ -67,5 +88,25 @@ export function createDummyJsonApi(request: ApiRequest): DummyJsonApi {
       request<Product>(`/products/${id}`, { signal: options.signal }),
 
     getCategories: () => request<Category[]>('/products/categories'),
+
+    /**
+     * Tous les produits d'une recherche ou d'une catégorie (`limit=0`), réduits aux champs
+     * d'une carte (`select`). Pour les filtres que l'API ne sait pas faire : prix (#5),
+     * recherche + catégorie (#3). Avec une recherche, la catégorie est filtrée par l'appelant.
+     */
+    getAllProductSummaries: (scope, params = {}) => {
+      const query = { limit: 0, select: PRODUCT_SUMMARY_FIELDS.join(','), ...listQuery(params) }
+      const options = { signal: params.signal }
+      if (scope.q) {
+        return request<ProductsResponse<ProductSummary>>('/products/search', {
+          query: { q: scope.q, ...query },
+          ...options,
+        })
+      }
+      const path = scope.category
+        ? `/products/category/${encodeURIComponent(scope.category)}`
+        : '/products'
+      return request<ProductsResponse<ProductSummary>>(path, { query, ...options })
+    },
   }
 }

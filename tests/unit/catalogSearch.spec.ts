@@ -3,10 +3,15 @@ import { filterLocally, localPage, needsLocalFiltering } from '../../utils/catal
 import { DEFAULT_FILTERS } from '../../utils/catalogQuery'
 import type { Product } from '../../types/dummyjson'
 
-const product = (id: number, category: string) => ({ id, category }) as Product
+const product = (id: number, category: string, price = 10) => ({ id, category, price }) as Product
 
 describe('needsLocalFiltering', () => {
-  it('seulement quand une recherche et une catégorie sont combinées', () => {
+  it('dès qu’une borne de prix est posée (#5), même 0', () => {
+    expect(needsLocalFiltering({ ...DEFAULT_FILTERS, minPrice: 0 })).toBe(true)
+    expect(needsLocalFiltering({ ...DEFAULT_FILTERS, maxPrice: 20 })).toBe(true)
+  })
+
+  it('sinon, seulement quand une recherche et une catégorie sont combinées', () => {
     expect(needsLocalFiltering(DEFAULT_FILTERS)).toBe(false)
     expect(needsLocalFiltering({ ...DEFAULT_FILTERS, q: 'phone' })).toBe(false)
     expect(needsLocalFiltering({ ...DEFAULT_FILTERS, category: 'smartphones' })).toBe(false)
@@ -17,14 +22,32 @@ describe('needsLocalFiltering', () => {
 })
 
 describe('filterLocally', () => {
-  const results = [product(101, 'mobile-accessories'), product(121, 'smartphones')]
+  const noPrice = { minPrice: null, maxPrice: null }
+  const results = [
+    product(101, 'mobile-accessories', 19.99),
+    product(121, 'smartphones', 299.99),
+    product(123, 'smartphones', 1099.99),
+  ]
 
   it('garde la catégorie demandée, dans l’ordre reçu', () => {
-    expect(filterLocally(results, { category: 'smartphones' })).toEqual([results[1]])
+    expect(filterLocally(results, { category: 'smartphones', ...noPrice })).toEqual([
+      results[1],
+      results[2],
+    ])
   })
 
-  it('sans catégorie, garde tout', () => {
-    expect(filterLocally(results, { category: null })).toEqual(results)
+  it('sans filtre, garde tout', () => {
+    expect(filterLocally(results, { category: null, ...noPrice })).toEqual(results)
+  })
+
+  it('prix seul, puis prix + catégorie', () => {
+    expect(filterLocally(results, { category: null, minPrice: 0, maxPrice: 300 })).toEqual([
+      results[0],
+      results[1],
+    ])
+    expect(filterLocally(results, { category: 'smartphones', minPrice: 0, maxPrice: 300 })).toEqual(
+      [results[1]],
+    )
   })
 })
 
