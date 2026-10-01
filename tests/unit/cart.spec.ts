@@ -8,11 +8,12 @@ import {
   parseCart,
   removeFromCart,
   serializeCart,
+  syncCartWithProducts,
   toCartLines,
   updateCartQuantity,
 } from '../../utils/cart'
 import { computeCart } from '../../utils/promotions'
-import type { CartItem, CartProduct } from '../../types/cart'
+import type { CartItem, CartProduct, CartProductDetails } from '../../types/cart'
 
 function product(overrides: Partial<CartProduct> = {}): CartProduct {
   return { id: 1, price: 9.99, category: 'beauty', stock: 5, ...overrides }
@@ -220,5 +221,43 @@ describe('cookie : serializeCart et parseCart', () => {
     expect(parseCart({ items: [], promoCode: 42 }).promoCode).toBe('')
     expect(parseCart({ items: [], promoCode: ' troyes10 ' }).promoCode).toBe('troyes10')
     expect(normalizePromoCode('A'.repeat(50))).toHaveLength(32)
+  })
+})
+
+describe('syncCartWithProducts', () => {
+  function details(overrides: Partial<CartProductDetails> = {}): CartProductDetails {
+    return { ...product(), title: 'Mascara', thumbnail: 'https://cdn/x.webp', ...overrides }
+  }
+
+  it('rien n’a changé : lignes identiques, aucun message', () => {
+    const items = [item({ quantity: 2 })]
+    expect(syncCartWithProducts(items, [details()])).toEqual({ items, messages: [] })
+  })
+
+  it('prix modifié : ligne mise à jour et message', () => {
+    const result = syncCartWithProducts([item()], [details({ price: 12.5 })])
+    expect(result.items[0]?.unitPriceCents).toBe(1250)
+    expect(result.messages[0]?.replace(/\s/g, ' ')).toBe(
+      'Le prix de « Mascara » a changé : 9,99 € → 12,50 €.',
+    )
+  })
+
+  it('stock réduit : quantité ramenée au stock et message', () => {
+    const result = syncCartWithProducts([item({ quantity: 5 })], [details({ stock: 2 })])
+    expect(result.items[0]).toEqual(item({ quantity: 2, stock: 2 }))
+    expect(result.messages).toEqual([
+      'Il ne reste que 2 exemplaires de « Mascara » : la quantité a été ajustée.',
+    ])
+  })
+
+  it('rupture : ligne retirée et message', () => {
+    const result = syncCartWithProducts([item()], [details({ stock: 0 })])
+    expect(result.items).toEqual([])
+    expect(result.messages[0]).toContain("n'est plus en stock")
+  })
+
+  it('produit non rechargé (API injoignable) : ligne gardée telle quelle', () => {
+    const items = [item({ productId: 42 })]
+    expect(syncCartWithProducts(items, [details()])).toEqual({ items, messages: [] })
   })
 })

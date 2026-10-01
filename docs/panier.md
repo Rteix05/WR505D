@@ -1,6 +1,6 @@
 # Panier : choix techniques
 
-Issue #8. Fichiers : `types/cart.ts`, `utils/cart.ts`, `stores/cart.ts`, `tests/unit/cart.spec.ts`.
+Issues #8 (store) et #9 (page `/panier`). Fichiers : `types/cart.ts`, `utils/cart.ts`, `utils/cartDetails.ts`, `stores/cart.ts`, `composables/useCartProducts.ts`, `components/cart/`, `pages/panier.vue`, `tests/unit/cart.spec.ts`, `tests/unit/cartDetails.spec.ts`.
 
 ## 1. Découpage : fonctions pures + store fin
 
@@ -76,3 +76,60 @@ Le pire qui puisse arriver est un panier vide, jamais une page qui plante.
 - modification de quantité : bornage au stock, valeurs invalides, produit absent ;
 - `toCartLines` branché sur `computeCart` (scénario 1 du sujet : 31,87 €) ;
 - cookie : aller-retour sans perte, format tuple, **taille du pire cas < 4 Ko**, cookies illisibles ou trafiqués.
+
+## 5. Page `/panier` (#9)
+
+### Découpage
+
+| Élément                | Rôle                                                                  |
+| ---------------------- | --------------------------------------------------------------------- |
+| `pages/panier.vue`     | Assemble tout, gère les messages et le focus                          |
+| `useCartProducts()`    | Recharge titre, image, prix et stock depuis l'API, resynchronise      |
+| `<CartItemRow>`        | Une ligne : quantité (−, champ, +), total, remise beauté, « Retirer » |
+| `<CartPromoForm>`      | Champ code promo, messages de refus, « Retirer le code »              |
+| `<CartSummaryPanel>`   | Brut, chaque remise avec sa raison, livraison, total                  |
+| `utils/cartDetails.ts` | Textes et montants d'affichage (fonctions pures, testées)             |
+
+Les composants ne calculent rien : ils reçoivent des props typées (`defineProps<…>()`) et émettent des événements (`defineEmits<…>()`). Le montant de chaque remise vient toujours de `computeCart`, jamais d'un second calcul.
+
+### Recharger les produits depuis l'API
+
+Le cookie ne contient ni titre ni image (voir section 3). La page recharge donc chaque produit avec `GET /products/{id}?select=title,thumbnail,price,stock,category`, en parallèle.
+
+- **`$fetch` et pas `$authFetch`** : le catalogue est public, et `$authFetch` sans session lève `SessionExpiredError`.
+- **`Promise.allSettled`** : un produit supprimé (404) ou une erreur réseau n'empêche pas d'afficher le reste. La ligne reste, avec le titre « Produit n° 12 ».
+- **Resynchronisation** (`syncCartWithProducts`) : le cookie peut dater de plusieurs jours. Si le prix a changé, on met à jour et on prévient (« Le prix de « Mascara » a changé : 9,99 € → 12,50 € »). Si le stock a baissé, la quantité est ajustée. Si le produit est en rupture, la ligne est retirée. Chaque changement est expliqué dans un encadré en haut de page.
+- Fait **dans le `useAsyncData`**, donc une seule fois, côté serveur au premier affichage : le HTML et le cookie renvoyés sont déjà à jour, sans décalage à l'hydratation.
+
+Alternative rejetée : `GET /products?limit=0` (tout le catalogue en un appel) pour éviter N requêtes. Plus simple, mais on télécharge 194 produits pour en afficher 3. Le panier est limité à 30 lignes, et les appels partent en parallèle.
+
+### « Détail ligne à ligne de chaque remise avec sa raison »
+
+- Dans le récapitulatif, chaque remise a sa ligne, son montant et une phrase qui explique pourquoi elle s'applique (`discountReason`). Quand le code est plafonné, la phrase le dit : « Code réduit à 8,99 € : le total des remises est limité à 25 % du montant brut. »
+- Sur chaque ligne beauté, la part de la remise beauté est affichée (`lineBeautyDiscountCents`). `computeCart` arrondit ligne par ligne, donc la somme des parts est **exactement** la remise du récapitulatif : un test le vérifie avec des lignes à 0,05 €, où un arrondi global donnerait un centime d'écart.
+- En bonus, « Plus que X € pour la livraison offerte » (sauf avec un produit furniture, qui ne l'a jamais).
+
+Exemple (scénario 2 du sujet, 3 × beauté à 19,99 €, code TROYES10) :
+
+| Ligne du récapitulatif | Montant | Raison affichée                                                                |
+| ---------------------- | ------- | ------------------------------------------------------------------------------ |
+| Montant brut           | 59,97 € |                                                                                |
+| Remise beauté          | -6,00 € | -10 % sur chaque article beauté, dès 3 articles beauté dans le panier.         |
+| Code TROYES10          | -8,99 € | Code réduit à 8,99 € : le total des remises est limité à 25 % du montant brut. |
+| Livraison              | 4,90 €  | Plus que 35,02 € pour la livraison offerte.                                    |
+| Total                  | 49,88 € |                                                                                |
+
+### Accessibilité (clavier et lecteur d'écran)
+
+- Quantité : bouton −, champ numérique avec un label (« Quantité de Mascara », masqué visuellement), bouton +. Les boutons ont un nom explicite (« Ajouter un exemplaire de Mascara »).
+- **Boutons jamais désactivés** : un bouton `disabled` perd le focus, et l'utilisateur clavier se retrouve en haut de la page. À la place, le store refuse (sous 1, au-delà du stock) et la zone `role="status"` explique pourquoi.
+- Champ quantité : la valeur est validée au `change` (Entrée ou sortie du champ), pas à chaque frappe. Une valeur refusée est remplacée par la vraie quantité.
+- « Retirer » : le texte lu est « Retirer Mascara du panier ». Après suppression, le bouton disparaît, donc le focus est replacé sur le titre `<h1>` et la suppression est annoncée.
+- Code promo : `<label>`, `aria-invalid` si refusé, `aria-describedby` vers la zone de messages `role="alert"`, présente dès le départ pour être annoncée.
+- Récapitulatif en `<dl>` : chaque montant est lu avec son intitulé.
+
+### Tests
+
+- `tests/unit/cart.spec.ts` : `syncCartWithProducts` (rien n'a changé, prix, stock réduit, rupture, produit non rechargé).
+- `tests/unit/cartDetails.spec.ts` : raisons des remises (code plein, code plafonné du scénario 2), somme des parts beauté égale à la remise, montant manquant pour la livraison offerte.
+- Les composants ne sont pas testés automatiquement : ils ne font qu'afficher. Testé à la main : voir la PR.
