@@ -65,5 +65,5 @@ Déstructurer un store directement (`const { user } = useAuthStore()`) copie la 
 ## 8. Pour l'équipe
 
 - `useAuthStore` est le point d'entrée pour l'authentification dans les composants : `isAuthenticated` (middleware, en-tête), `user` (page `/compte`), `logout()`.
-- #31 (Marwan) ajoute un `logout()` dans `useAuth` ; il peut appeler `useAuthStore().logout()`, qui fait la même chose, pour qu'il n'y ait qu'une déconnexion.
+- Une seule déconnexion (#34) : le `logout()` ajouté dans `useAuth` par #31 faisait la même chose que celui du store ; il a été retiré, `/compte` appelle `useAuthStore().logout()` et le middleware lit `useAuthStore().isAuthenticated`.
 - `persist` peut servir à d'autres stores, avec `pick` pour ne garder que le nécessaire. Le panier (#8) garde sa persistance à lui : ses tuples compacts tiennent sous 4 Ko, ce que le JSON objet du plugin ne garantit pas.
