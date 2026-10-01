@@ -9,6 +9,8 @@ const PAGES = [
   '/produits',
   '/produits?page=2',
   '/produits?category=beauty&sortBy=price&order=desc',
+  '/produits?q=phone&category=smartphones',
+  '/produits?q=zzzz',
   '/connexion',
   '/produits/9',
   '/produits/117',
