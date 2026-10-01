@@ -1,5 +1,8 @@
 <script setup lang="ts">
-const { user } = useAuth()
+import { storeToRefs } from 'pinia'
+
+// storeToRefs garde la réactivité en déstructurant le store (une simple déstructuration la perdrait).
+const { user } = storeToRefs(useAuthStore())
 </script>
 
 <template>

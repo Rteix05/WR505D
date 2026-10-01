@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
-const { isLoggedIn, login } = useAuth()
+const auth = useAuthStore()
 
 useSeoMeta({
   title: 'Connexion',
@@ -11,11 +11,12 @@ useSeoMeta({
 const redirectTo = computed((): string => safeRedirect(route.query.redirect))
 
 // Déjà connecté : inutile d'afficher le formulaire.
-if (isLoggedIn.value) {
+if (auth.isAuthenticated) {
   await navigateTo(redirectTo.value, { replace: true })
 }
 
-const username = ref('')
+// Pré-rempli avec le nom de la dernière connexion (cookie `auth`, lu dès le rendu serveur).
+const username = ref(auth.rememberedUsername)
 const password = ref('')
 const usernameError = ref('')
 const passwordError = ref('')
@@ -40,7 +41,7 @@ async function onSubmit(): Promise<void> {
 
   pending.value = true
   try {
-    await login({ username: username.value.trim(), password: password.value })
+    await auth.login({ username: username.value.trim(), password: password.value })
     await navigateTo(redirectTo.value)
   } catch (error) {
     formError.value = loginErrorMessage(error)
