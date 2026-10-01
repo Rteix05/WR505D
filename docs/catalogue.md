@@ -4,7 +4,7 @@ Issue #2. Fichiers : `pages/produits/index.vue`, `components/ProductCard.vue`, `
 
 ## 1. L'URL est la source de vérité
 
-La page courante est lue dans `?page=` (`pageFromQuery`), jamais stockée ailleurs. Conséquences :
+La page courante est lue dans `?page=` (`parseCatalogQuery`, #4), jamais stockée ailleurs. Conséquences :
 
 - un lien partagé ou un favori rouvre la même page ;
 - le bouton « Précédent » du navigateur fonctionne sans code en plus ;
@@ -70,13 +70,13 @@ Une ellipse ne remplace jamais **une seule** page : elle prendrait autant de pla
 - Images en `loading="lazy"` avec `width`/`height` : pas de décalage de mise en page pendant le chargement.
 - La carte ne reçoit que les champs affichés (`Pick<Product, …>`) : elle pourra servir avec des produits partiels.
 
-## 7. En attente de #4
+## 7. Branché sur #4
 
-`utils/catalogQuery.ts` (Rafael, #4) n'est pas encore mergé. En attendant, `pageFromQuery` lit `?page=` avec les mêmes règles que son `parsePage`. Les noms exportés sont différents des siens pour éviter un conflit d'auto-import Nuxt au merge. Une fois #4 mergée, la page passera à `parseCatalogQuery` et `paginationParams`.
+`pageFromQuery` a été remplacé par `parseCatalogQuery` de `utils/catalogQuery.ts` (#4), qui lit la page avec les mêmes règles, plus la catégorie, le tri, la recherche et les prix. Voir `docs/catalogue-url.md`.
 
 ## 8. Tests
 
-- Unitaires : `pageFromQuery` (valeurs invalides, paramètre répété, trop grand), `paginationItems` (début, milieu, fin, pas d'ellipse pour une page, hors bornes), `discountBadge` (arrondi, sous 1 %), `formatRating`.
+- Unitaires : `paginationItems` (début, milieu, fin, pas d'ellipse pour une page, hors bornes), `discountBadge` (arrondi, sous 1 %), `formatRating`.
 - Dans un vrai navigateur (Chromium, Playwright) :
   - 12 cartes ;
   - « Suivante » au clavier (Entrée) : 12 squelettes et `aria-busy`, puis page 2 dans l'URL et focus sur le titre ;

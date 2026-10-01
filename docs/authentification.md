@@ -65,7 +65,7 @@ La page lit `?redirect=/compte` pour renvoyer l'utilisateur là où il allait (l
 
 - doit commencer par `/` ;
 - refuse `//site.com` et `/\site.com` (les navigateurs les interprètent comme une autre adresse) ;
-- refuse `/connexion` (boucle inutile) ;
+- refuse la page de connexion elle-même, sous toutes ses formes : `/connexion`, `/connexion/`, `/Connexion`, `/connexion#…`, `/connexion?…` (boucle inutile). La comparaison se fait sur le chemin seul, sans slash final et en minuscules, car vue-router ignore la casse (ajouté suite à la review de #16) ;
 - sinon, repli sur l'accueil.
 
 La fonction reçoit `unknown` car `route.query.redirect` peut être une chaîne, un tableau (`?redirect=a&redirect=b`) ou absent : on vérifie le type avant de l'utiliser (narrowing), sans `any`.

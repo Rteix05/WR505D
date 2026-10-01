@@ -60,8 +60,15 @@ describe('safeRedirect', () => {
     ['javascript:', 'javascript:alert(1)'],
     ['page de connexion', '/connexion'],
     ['page de connexion avec query', '/connexion?redirect=/compte'],
+    ['page de connexion avec slash final', '/connexion/'],
+    ['page de connexion avec hash', '/connexion#formulaire'],
+    ['page de connexion en majuscules', '/Connexion'],
   ])('refuse une cible dangereuse ou inutile (%s)', (_label, target) => {
     expect(safeRedirect(target)).toBe('/')
+  })
+
+  it('accepte une page dont le nom commence par « connexion »', () => {
+    expect(safeRedirect('/connexions-recentes')).toBe('/connexions-recentes')
   })
 
   it('utilise le repli fourni', () => {

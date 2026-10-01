@@ -101,7 +101,8 @@ export interface User extends DummyUserProfile {
   age: number
   phone: string
   birthDate: string
-  role: 'admin' | 'moderator' | 'user'
+  /** Non utilisé par l'application : `string` pour ne pas casser si l'API ajoute un rôle. */
+  role: string
 }
 
 /** Ce que l'application garde de l'utilisateur connecté (state Pinia, payload SSR). */
