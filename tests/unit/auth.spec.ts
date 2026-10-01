@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { httpStatusOf, loginErrorMessage, safeRedirect, toAuthUser } from '../../utils/auth'
+import {
+  httpStatusOf,
+  loginErrorMessage,
+  loginRedirectLocation,
+  safeRedirect,
+  toAuthUser,
+} from '../../utils/auth'
 import type { User } from '../../types/dummyjson'
 
 describe('toAuthUser', () => {
@@ -98,4 +104,22 @@ describe('loginErrorMessage', () => {
   it('erreur serveur', () => {
     expect(loginErrorMessage({ statusCode: 500 })).toContain('indisponible')
   })
+})
+
+describe('loginRedirectLocation (middleware auth)', () => {
+  it('envoie vers la connexion avec la page demandée', () => {
+    expect(loginRedirectLocation('/compte')).toEqual({
+      path: '/connexion',
+      query: { redirect: '/compte' },
+    })
+  })
+
+  // Le middleware et la page /connexion doivent s'accorder : ce que l'un envoie,
+  // l'autre doit l'accepter, sinon l'utilisateur atterrirait sur l'accueil après connexion.
+  it.each(['/compte', '/compte?onglet=commandes', '/compte?a=1&b=2#adresse'])(
+    'la cible %s est acceptée telle quelle par safeRedirect après connexion',
+    (target) => {
+      expect(safeRedirect(loginRedirectLocation(target).query.redirect)).toBe(target)
+    },
+  )
 })

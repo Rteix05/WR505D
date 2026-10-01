@@ -56,6 +56,7 @@ test.describe('Connexion /connexion', () => {
     const ssrPage = await noJs.newPage()
     await ssrPage.goto('/')
     await expect(header(ssrPage)).toContainText('Bonjour, Emily')
+    await expect(header(ssrPage).getByRole('link', { name: 'Mon compte' })).toBeVisible()
     await expect(header(ssrPage).getByRole('link', { name: 'Connexion' })).toHaveCount(0)
     await noJs.close()
   })

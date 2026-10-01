@@ -15,7 +15,12 @@ const cart = useCartStore()
         <ul class="layout__nav">
           <li><NuxtLink to="/">Accueil</NuxtLink></li>
           <li><NuxtLink to="/produits">Produits</NuxtLink></li>
-          <li v-if="user">Bonjour, {{ user.firstName }}</li>
+          <!-- Le prénom reste affiché : rendu côté serveur, il prouve qu'il n'y a pas de flash
+               de l'état déconnecté (vérifié par e2e/connexion.spec.ts). -->
+          <template v-if="user">
+            <li>Bonjour, {{ user.firstName }}</li>
+            <li><NuxtLink to="/compte">Mon compte</NuxtLink></li>
+          </template>
           <li v-else><NuxtLink to="/connexion">Connexion</NuxtLink></li>
         </ul>
       </nav>
