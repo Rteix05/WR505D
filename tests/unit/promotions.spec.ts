@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { computeCart, type CartLine, type CartSummary } from '../../utils/promotions'
+import {
+  applyDiscountCap,
+  computeCart,
+  type CartLine,
+  type CartSummary,
+} from '../../utils/promotions'
 
 let nextId = 1
 function line(quantity: number, category: string, unitPriceCents: number): CartLine {
@@ -213,5 +218,22 @@ describe('computeCart : cas limites', () => {
     const copy = structuredClone(lines)
     computeCart(lines, 'TROYES10')
     expect(lines).toEqual(copy)
+  })
+})
+
+describe('applyDiscountCap : si une autre remise dépassait un jour le plafond', () => {
+  // Cas impossible avec les règles actuelles (beauté = 10 % < 25 %), testé directement
+  // pour que le message reste juste si une nouvelle remise est ajoutée (review de #15).
+  const bigBeauty = { id: 'BEAUTY_3' as const, label: 'Remise beauté', amountCents: 3000 }
+  const promo = { id: 'TROYES10' as const, label: 'Code TROYES10', amountCents: 1000 }
+
+  it('sans code promo : rien n’est réduit, aucun message trompeur', () => {
+    expect(applyDiscountCap([bigBeauty], 10000)).toEqual({ discounts: [bigBeauty], message: null })
+  })
+
+  it('dépassement plus grand que le code : code retiré, message « ne s’applique pas »', () => {
+    const result = applyDiscountCap([bigBeauty, promo], 10000)
+    expect(result.discounts).toEqual([bigBeauty])
+    expect(result.message).toContain("ne s'applique pas")
   })
 })

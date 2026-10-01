@@ -11,6 +11,7 @@ const cart = useCartStore()
       <nav aria-label="Navigation principale">
         <ul class="layout__nav">
           <li><NuxtLink to="/">Accueil</NuxtLink></li>
+          <li><NuxtLink to="/produits">Produits</NuxtLink></li>
           <li v-if="user">Bonjour, {{ user.firstName }}</li>
           <li v-else><NuxtLink to="/connexion">Connexion</NuxtLink></li>
         </ul>
@@ -41,6 +42,8 @@ const cart = useCartStore()
 }
 .layout__header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
@@ -57,6 +60,7 @@ const cart = useCartStore()
 }
 .layout__nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   list-style: none;
   margin: 0;

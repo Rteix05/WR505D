@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import type { NuxtApp } from '#app'
-import type { AuthTokens } from '~/types/auth'
+import type { AuthTokens } from '~/types/dummyjson'
 
 export interface AuthCookies {
   accessToken: Ref<string | null | undefined>
