@@ -3,7 +3,26 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  modules: ['@pinia/nuxt', '@nuxt/eslint', '@nuxt/test-utils/module'],
+  modules: [
+    '@pinia/nuxt',
+    // Persistance des stores (séance 7). Le paquet cité en cours, @pinia-plugin-persistedstate/nuxt,
+    // est abandonné : celui-ci est le paquet maintenu, compatible Pinia 3+ et @pinia/nuxt 0.10+.
+    'pinia-plugin-persistedstate/nuxt',
+    '@nuxt/eslint',
+    '@nuxt/test-utils/module',
+  ],
+
+  // Stockage par défaut des stores persistés : cookie (lisible au rendu serveur, contrairement
+  // à localStorage), donc pas de « saut » entre le HTML du serveur et la page hydratée.
+  piniaPluginPersistedstate: {
+    storage: 'cookies',
+    cookieOptions: {
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 365 * 24 * 60 * 60,
+    },
+  },
 
   typescript: {
     strict: true,
@@ -13,7 +32,12 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBase: 'https://dummyjson.com',
-      siteUrl: 'http://localhost:3000',
+      // Durée de vie de l'accessToken. Surcharge : NUXT_PUBLIC_AUTH_EXPIRES_IN_MINS=1
+      authExpiresInMins: 30,
+      // Sur Vercel, VERCEL_PROJECT_PRODUCTION_URL est fourni automatiquement (sans protocole)
+      siteUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : 'http://localhost:3000',
     },
   },
 

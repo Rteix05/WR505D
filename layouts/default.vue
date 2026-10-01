@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import { storeToRefs } from 'pinia'
+
+// storeToRefs garde la réactivité en déstructurant le store (une simple déstructuration la perdrait).
+const { user } = storeToRefs(useAuthStore())
+const cart = useCartStore()
+</script>
+
 <template>
   <div class="layout">
     <a href="#contenu" class="skip-link">Aller au contenu</a>
@@ -6,8 +14,23 @@
       <nav aria-label="Navigation principale">
         <ul class="layout__nav">
           <li><NuxtLink to="/">Accueil</NuxtLink></li>
+          <li><NuxtLink to="/produits">Produits</NuxtLink></li>
+          <!-- Le prénom reste affiché : rendu côté serveur, il prouve qu'il n'y a pas de flash
+               de l'état déconnecté (vérifié par e2e/connexion.spec.ts). -->
+          <template v-if="user">
+            <li>Bonjour, {{ user.firstName }}</li>
+            <li><NuxtLink to="/compte">Mon compte</NuxtLink></li>
+          </template>
+          <li v-else><NuxtLink to="/connexion">Connexion</NuxtLink></li>
         </ul>
       </nav>
+      <NuxtLink
+        to="/panier"
+        class="layout__cart"
+        :aria-label="`Panier, ${cart.itemCount} article${cart.itemCount > 1 ? 's' : ''}`"
+      >
+        Panier ({{ cart.itemCount }})
+      </NuxtLink>
     </header>
     <main id="contenu" class="layout__main">
       <slot />
@@ -27,6 +50,8 @@
 }
 .layout__header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
@@ -38,8 +63,12 @@
   text-decoration: none;
   color: inherit;
 }
+.layout__cart {
+  font-weight: 600;
+}
 .layout__nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   list-style: none;
   margin: 0;
