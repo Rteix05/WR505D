@@ -120,6 +120,10 @@ Page, recherche, catégorie, tri et prix sont dans les query params, lus et écr
 
 `/produits/[id]` : galerie, marque, note, prix, stock (« Plus que X en stock » sous 5, bouton désactivé en rupture), garantie et livraison, ajout au panier. Vraie 404 (statut HTTP compris) pour un identifiant inexistant ou invalide, page d'erreur en français (`error.vue`). Choix détaillés dans [docs/fiche-produit.md](docs/fiche-produit.md).
 
+### Produits vus récemment
+
+Logique pure dans `utils/recentlyViewed.ts` : `pushRecentlyViewed` (produit visité en tête, sans doublon, 10 maximum) et `parseRecentlyViewedCookie` (cookie `recently_viewed` validé, ne lève jamais d'erreur). Choix et cas limites dans [docs/vus-recemment.md](docs/vus-recemment.md).
+
 ### Panier
 
 Store Pinia `cart` persisté dans un cookie (présent dès le rendu serveur, moins de 4 Ko), limite de stock expliquée à l'utilisateur, récapitulatif calculé par `computeCart`. Choix techniques (format du cookie, validation, stock) dans [docs/panier.md](docs/panier.md).
