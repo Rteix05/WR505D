@@ -13,15 +13,11 @@ const api = useApi()
 // produits chez n'importe qui, dès le rendu serveur. Le cookie `compare` ne sert pas ici.
 const requestedIds = computed((): number[] => parseCompareIds(route.query.ids))
 
-// Appels en parallèle, un par produit : l'échec de l'un n'empêche pas l'affichage des autres.
-// À remplacer par `useApi().getProductsByIds` dès que #45 est mergée.
+// Appels en parallèle, un par produit (`getProductsByIds`, #45) : l'échec de l'un
+// n'empêche pas l'affichage des autres. Le `signal` coupe les requêtes si l'URL change.
 const { data, status, refresh } = await useAsyncData(
   'compare',
-  async () => {
-    const ids = requestedIds.value
-    const results = await Promise.allSettled(ids.map((id) => api.getProduct(id)))
-    return sortCompareResults<Product>(ids, results, httpStatusOf)
-  },
+  (_nuxtApp, { signal }) => api.getProductsByIds(requestedIds.value, { signal }),
   { watch: [requestedIds] },
 )
 
