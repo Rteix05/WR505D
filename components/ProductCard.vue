@@ -37,6 +37,9 @@ const rating = computed((): string => formatRating(props.product.rating))
       <span class="visually-hidden">Note :</span>
       {{ rating }}<span class="visually-hidden"> sur 5</span>
     </p>
+    <CompareButton
+      :product="{ id: product.id, title: product.title, thumbnail: product.thumbnail }"
+    />
   </article>
 </template>
 
