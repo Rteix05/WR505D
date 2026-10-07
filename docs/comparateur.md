@@ -81,7 +81,7 @@ Un appel par produit, tous lancés en même temps (`Promise.allSettled`), dans `
 | 404 (identifiant inexistant) | retiré de l'URL                                               |
 | Autre échec (réseau, 500)    | gardé dans l'URL (le produit existe peut-être), « Réessayer » |
 
-`allSettled` et pas `all` : avec `Promise.all`, un seul produit en échec ferait échouer toute la page. En attendant `getProductsByIds` (#45), la page appelle `useApi().getProduct` en parallèle ; le remplacement tient en une ligne.
+`allSettled` et pas `all` : avec `Promise.all`, un seul produit en échec ferait échouer toute la page. Depuis #45, la page appelle `useApi().getProductsByIds`, qui fait ces appels en parallèle et ce tri (avec `sortCompareResults`), et transmet le `signal` de `useAsyncData`.
 
 ### Normalisation de l'URL
 
@@ -110,4 +110,4 @@ Titre « Comparer : A, B, C », `noindex, follow` : une page par combinaison pos
 ### Reste à faire
 
 - « Remplacer ma sélection par celle-ci » : dès que la sélection persistée (#46) est mergée.
-- `getProductsByIds` (#45) à la place des appels `getProduct`, et le tableau (#48) à la place de la liste.
+- Le tableau (#48) à la place de la liste.
