@@ -124,6 +124,10 @@ Page, recherche, catégorie, tri et prix sont dans les query params, lus et écr
 
 Logique pure dans `utils/recentlyViewed.ts` : `pushRecentlyViewed` (produit visité en tête, sans doublon, 10 maximum) et `parseRecentlyViewedCookie` (cookie `recently_viewed` validé, ne lève jamais d'erreur). Choix et cas limites dans [docs/vus-recemment.md](docs/vus-recemment.md).
 
+### Comparateur : sélection
+
+Bouton « Comparer » (bascule `aria-pressed`) sur chaque carte et sur la fiche produit, 3 produits maximum, barre « Comparer (2/3) » visible pendant la navigation, sélection dans le cookie `compare` (identifiants uniquement, lu dès le rendu serveur, validé à la lecture). Choix détaillés dans [docs/comparateur-selection.md](docs/comparateur-selection.md).
+
 ### Panier
 
 Store Pinia `cart` persisté dans un cookie (présent dès le rendu serveur, moins de 4 Ko), limite de stock expliquée à l'utilisateur, récapitulatif calculé par `computeCart`. Choix techniques (format du cookie, validation, stock) dans [docs/panier.md](docs/panier.md).
