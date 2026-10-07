@@ -65,7 +65,7 @@ Une seule valeur invalide ne vide pas tout l'historique : seule elle est ignoré
 | `"[1,"`         | `[]`        | JSON invalide                                  |
 | 15 identifiants | les 10 1ᵉʳˢ | cookie trafiqué : on ne dépasse jamais 10      |
 
-Un identifiant valide = entier ≥ 1, écrit **uniquement en chiffres** : `1.5`, `1e3`, `0x10` ou `99999999999999999999` (trop grand pour être exact en JavaScript) sont refusés. Même règle que `parseProductId` de la fiche produit.
+Un identifiant valide = entier ≥ 1, écrit **uniquement en chiffres** : `1.5`, `1e3`, `0x10` ou `99999999999999999999` (trop grand pour être exact en JavaScript) sont refusés. Même règle que `parseProductId` de la fiche produit, mais pas réutilisée : elle reçoit un texte d'URL, alors que le cookie peut arriver en nombre ou en tableau.
 
 ## 4. Format du cookie : `12,5,3`
 
@@ -86,4 +86,11 @@ L'écart est faible : les deux sont très loin de la limite de 4 Ko. Le format �
 
 - `pushRecentlyViewed` : historique vide, nouveau produit, produit déjà vu (remonte), dépassement de 10 (le plus ancien sort), historique plein avec un produit déjà présent, `max` personnalisé et à 0, 4 identifiants invalides, tableau d'entrée non modifié ;
 - `parseRecentlyViewedCookie` : format du site, nombre seul, tableaux (nombres, textes, JSON), `"5,5,5"`, ordre des doublons, `"1,,2"`, valeurs invalides mélangées, plus de 10 identifiants, identifiant trop grand, et 10 entrées qui doivent donner un historique vide sans erreur (`"abc"`, `[]`, `null`, `undefined`, `""`, JSON invalide, JSON qui n'est pas un tableau, objet, booléen, nombre négatif) ;
-- `serializeRecentlyViewed` : aller-retour sans perte, taille du pire cas (< 50 caractères avant encodage), historique vide.
+- `serializeRecentlyViewed` : aller-retour sans perte, taille du pire cas (39 caractères, 57 octets une fois encodé), historique vide.
+
+## 6. Suites de la review de #59
+
+- Le commentaire de `serializeRecentlyViewed` disait « ≈ 40 octets » : c'est 57 une fois encodé, comme mesuré plus haut. Corrigé, et le test vérifie maintenant la taille avec `encodeURIComponent`.
+- `1e3` : `useCookie` ne le convertit pas en nombre (`String(1000)` n'est pas `"1e3"`), il reste du texte et il est refusé. Vérifié avec le décodeur de Nuxt.
+- `pushRecentlyViewed` ne revérifie pas son tableau : il doit venir de `parseRecentlyViewedCookie` (précisé dans la JSDoc).
+- Un identifiant valide peut ne correspondre à aucun produit : cas traité avec l'affichage (#50).
