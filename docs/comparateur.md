@@ -62,3 +62,52 @@ Le sujet impose de proposer « Remplacer ma sélection par celle-ci » quand le 
 ### Tests
 
 38 tests, couverture complète de `utils/compare.ts`. Tous les cas demandés par le sujet : doublons (`"5,5,5"`), ordre, dépassement du maximum, entrées invalides (`"abc"`, `"1,,2"`, tableau vide, `null`), plus `"-1"`, `"1.5"`, `"1e3"`, `"0"`, nombre trop grand, espaces, paramètre répété, cookie en tableau de nombres, aller-retour URL, retrait quand le comparateur est plein, tableau d'entrée jamais modifié.
+
+## 2. Page `/comparer` (#47)
+
+Fichiers : `pages/comparer.vue`, `utils/compare.ts` (`isCanonicalCompareQuery`, `sortCompareResults`), `e2e/comparer.spec.ts`.
+
+### L'URL est la seule source de vérité
+
+La page lit uniquement `?ids=` (`parseCompareIds`), jamais le cookie `compare` : un lien partagé affiche exactement les mêmes produits chez n'importe qui, en fenêtre privée, sans JavaScript (vérifié par Playwright). Le cookie sert à la sélection en cours du visiteur (#46) ; la page ne l'utilisera que pour proposer « Remplacer ma sélection par celle-ci », sans jamais l'écraser d'office.
+
+### Chargement en parallèle, échecs isolés
+
+Un appel par produit, tous lancés en même temps (`Promise.allSettled`), dans `useAsyncData` : côté serveur au premier affichage. `sortCompareResults` (fonction pure, testée) range chaque résultat :
+
+| Résultat                     | Traitement                                                    |
+| ---------------------------- | ------------------------------------------------------------- |
+| Produit chargé               | affiché, dans l'ordre de l'URL                                |
+| 404 (identifiant inexistant) | retiré de l'URL                                               |
+| Autre échec (réseau, 500)    | gardé dans l'URL (le produit existe peut-être), « Réessayer » |
+
+`allSettled` et pas `all` : avec `Promise.all`, un seul produit en échec ferait échouer toute la page. En attendant `getProductsByIds` (#45), la page appelle `useApi().getProduct` en parallèle ; le remplacement tient en une ligne.
+
+### Normalisation de l'URL
+
+Après le chargement, `isCanonicalCompareQuery` compare la valeur brute de `?ids=` à la forme canonique (sans invalides, doublons, identifiants au-delà de 3 ni inexistants). Si elles diffèrent, `navigateTo({ query }, { replace: true })` :
+
+- côté serveur, c'est une **redirection HTTP** (vérifiée sans JavaScript) : jamais d'erreur 500 ;
+- `replace` : l'URL corrigée remplace l'ancienne dans l'historique, « Précédent » ne ramène pas à l'URL invalide ;
+- les autres paramètres de l'URL sont conservés ;
+- s'il ne reste rien, l'URL devient `/comparer` et la page affiche « Aucun produit à comparer » avec un lien vers le catalogue.
+
+`definePageMeta({ key: route.fullPath })` : passer d'une comparaison à une autre recrée la page, donc recharge et renormalise (comme la fiche produit).
+
+### Copier le lien
+
+`navigator.clipboard.writeText` avec l'URL canonique complète, puis « Lien copié dans le presse-papiers. » dans une zone `role="status"` (annoncée). **Repli** si l'API est absente (page non HTTPS, ancien navigateur) ou refusée : le lien s'affiche dans un champ en lecture seule avec un label, sélectionné et focalisé, et le message invite à le copier au clavier. Les deux cas sont testés par Playwright (le second en supprimant `navigator.clipboard`).
+
+### SEO et accessibilité
+
+Titre « Comparer : A, B, C », `noindex, follow` : une page par combinaison possible n'a pas sa place dans les moteurs de recherche. axe-core : zéro violation. L'affichage est provisoire (liste) : le tableau comparatif accessible arrive avec #48.
+
+### Tests
+
+- Unitaires : `isCanonicalCompareQuery` (8 cas à normaliser), `sortCompareResults` (ordre, 404 contre réseau ou 500).
+- Playwright (`e2e/comparer.spec.ts`, 11 parcours) : produits dans l'ordre de l'URL, 4 URL invalides normalisées en 200, URL entièrement invalide → état vide, copie du lien (presse-papiers relu) et repli au clavier, axe, et sans JavaScript : produits dans le HTML et redirection du serveur.
+
+### Reste à faire
+
+- « Remplacer ma sélection par celle-ci » : dès que la sélection persistée (#46) est mergée.
+- `getProductsByIds` (#45) à la place des appels `getProduct`, et le tableau (#48) à la place de la liste.

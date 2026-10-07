@@ -236,6 +236,9 @@ Barème : « parcours complet vert en CI ». Le job « E2E Playwright » de la C
 - Couvrir : le parcours normal, le clavier (`focus()` + `keyboard.press('Enter')`), le bouton retour (`page.goBack()`), une URL invalide, et le rendu sans JavaScript (`test.use({ javaScriptEnabled: false })`).
 - Accessibilité : ajouter chaque nouvelle page au tableau `PAGES` de `e2e/accessibilite.spec.ts` (axe-core, WCAG 2.1 AA, zéro violation).
 - Compte de démonstration pour les parcours connectés : `emilys` / `emilyspass` (public, donné par le sujet).
+- **Attendre l'hydratation avant un clic ou une touche** sur une page rendue par le serveur : le HTML est affiché avant que les boutons réagissent. Voir `waitForHydration` dans `e2e/comparer.spec.ts`.
+- Pas de `test.each` dans Playwright (c'est Vitest) : une boucle `for` qui appelle `test(...)` par cas.
+- Un échec différent à chaque lancement, par dépassement de délai (« Test timeout exceeded while setting up "page" »), vient de la machine, pas du code : la configuration limite à 3 navigateurs en local.
 
 ## Justification (chaque étudiant explique son code à l'oral)
 
