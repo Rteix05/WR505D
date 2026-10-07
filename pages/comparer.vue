@@ -124,14 +124,10 @@ useSeoMeta({
         </button>
       </div>
 
-      <!-- Affichage provisoire : le tableau comparatif accessible arrive avec #48. -->
-      <ul class="compare__list" :aria-busy="loading">
-        <li v-for="product in products" :key="product.id" class="compare__item">
-          <img :src="product.thumbnail" alt="" width="120" height="120" loading="lazy" />
-          <NuxtLink :to="`/produits/${product.id}`">{{ product.title }}</NuxtLink>
-          <span>{{ formatCents(toCents(product.price)) }}</span>
-        </li>
-      </ul>
+      <!-- Tableau comparatif (#48) : produits dans l'ordre de l'URL. -->
+      <div :aria-busy="loading">
+        <CompareTable v-if="products.length > 0" :products="products" />
+      </div>
     </template>
   </section>
 </template>
@@ -179,18 +175,5 @@ useSeoMeta({
   font: inherit;
   border: 1px solid #6b7280;
   border-radius: 0.375rem;
-}
-.compare__list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.compare__item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
 }
 </style>
