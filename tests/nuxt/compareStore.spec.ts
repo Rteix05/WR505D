@@ -145,6 +145,15 @@ describe('useCompareStore', () => {
     expect(JSON.stringify(cookieValue())).not.toContain('cdn')
   })
 
+  // Review de #62 : Pinia ne transmet au navigateur que les refs RENVOYÉES par le store.
+  // Sans `known` dans l'état, le serveur affichait les titres mais le navigateur n'en avait aucun.
+  it('known fait partie de l’état transmis du serveur au navigateur', () => {
+    const compare = freshStore()
+    compare.toggle(mascara)
+    expect(Object.keys(compare.$state).sort()).toEqual(['announcement', 'ids', 'known'])
+    expect(compare.$state.known[1]).toEqual(mascara)
+  })
+
   it('après un rechargement : identifiants connus sans titre, puis rechargés', () => {
     setCookie('1,2')
     const compare = freshStore()

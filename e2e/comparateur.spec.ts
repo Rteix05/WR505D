@@ -118,6 +118,30 @@ test.describe('Comparateur : sélection', () => {
     await expect(barItems(page).first()).not.toContainText('Produit n°')
   })
 
+  test('après un rechargement : titres transmis au navigateur, aucun appel API refait', async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await context.addCookies([{ name: 'compare', value: '1%2C2', url: baseURL ?? '' }])
+    // Seuls comptent les appels faits PAR LE NAVIGATEUR : ceux du serveur sont invisibles ici.
+    // Suite à la review de #62 : `known` n'était pas dans l'état Pinia transmis, donc le
+    // navigateur ne connaissait aucun titre et refaisait les appels déjà faits par le serveur.
+    const browserCalls: string[] = []
+    page.on('request', (request) => {
+      if (request.url().includes('dummyjson.com/products/')) browserCalls.push(request.url())
+    })
+
+    await page.goto('/produits')
+    await waitForHydration(page)
+    await page.waitForLoadState('networkidle')
+
+    await expect(barItems(page)).toHaveCount(2)
+    await expect(bar(page)).not.toContainText('Produit n°')
+    await expect(barItems(page).first().locator('img')).toHaveAttribute('src', /^https:\/\//)
+    expect(browserCalls).toEqual([])
+  })
+
   test('la sélection suit la navigation : fiche produit, puis catalogue, puis /comparer', async ({
     page,
   }) => {
