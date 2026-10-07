@@ -115,10 +115,11 @@ describe('serializeRecentlyViewed', () => {
     expect(parseRecentlyViewedCookie(serializeRecentlyViewed(ids))).toEqual(ids)
   })
 
-  it('historique plein : quelques dizaines d’octets', () => {
-    // Pire cas réaliste : 10 identifiants à 3 chiffres (DummyJSON en compte 194).
+  it('pire cas : 57 octets une fois encodé par useCookie (virgules en %2C)', () => {
+    // 10 identifiants à 3 chiffres (DummyJSON en compte 194).
     const worst = range(RECENTLY_VIEWED_MAX).map((i) => 190 + i)
-    expect(serializeRecentlyViewed(worst).length).toBeLessThan(50)
+    expect(serializeRecentlyViewed(worst)).toHaveLength(39)
+    expect(encodeURIComponent(serializeRecentlyViewed(worst))).toHaveLength(57)
   })
 
   it('historique vide : chaîne vide', () => {
