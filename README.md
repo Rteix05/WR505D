@@ -120,6 +120,10 @@ Page, recherche, catégorie, tri et prix sont dans les query params, lus et écr
 
 `/produits/[id]` : galerie, marque, note, prix, stock (« Plus que X en stock » sous 5, bouton désactivé en rupture), garantie et livraison, ajout au panier. Vraie 404 (statut HTTP compris) pour un identifiant inexistant ou invalide, page d'erreur en français (`error.vue`). Choix détaillés dans [docs/fiche-produit.md](docs/fiche-produit.md).
 
+### Comparateur
+
+`/comparer?ids=1,2,3` : jusqu'à 3 produits, URL source de vérité, lien partageable. Tableau accessible (`<table>`, en-têtes de lignes et de colonnes) : meilleure valeur signalée par un texte (« Meilleur prix »), option « Afficher uniquement les différences », défilement horizontal avec première colonne figée sur mobile. Détails dans [docs/comparateur.md](docs/comparateur.md).
+
 ### Produits vus récemment
 
 Logique pure dans `utils/recentlyViewed.ts` : `pushRecentlyViewed` (produit visité en tête, sans doublon, 10 maximum) et `parseRecentlyViewedCookie` (cookie `recently_viewed` validé, ne lève jamais d'erreur). Choix et cas limites dans [docs/vus-recemment.md](docs/vus-recemment.md).
