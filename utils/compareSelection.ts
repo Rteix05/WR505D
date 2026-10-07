@@ -1,4 +1,4 @@
-import { COMPARE_MAX } from './compare'
+import { COMPARE_MAX, formatCompareIds } from './compare'
 
 /** Message annoncé (`aria-live`) quand le comparateur est plein : texte imposé par l'issue #46. */
 export const COMPARE_FULL_MESSAGE =
@@ -34,7 +34,11 @@ export function compareRemoveName(title: string): string {
   return `Retirer ${title} du comparateur`
 }
 
-/** Lien de la barre vers la page de comparaison, ou `null` s'il n'y a rien à comparer. */
+/**
+ * Lien de la barre vers la page de comparaison, ou `null` s'il n'y a rien à comparer.
+ * L'URL est écrite par `formatCompareIds` (#44) : une seule règle pour la forme de `?ids=`.
+ */
 export function compareLink(ids: number[]): string | null {
-  return ids.length > 0 ? `/comparer?ids=${ids.join(',')}` : null
+  const value = formatCompareIds(ids)
+  return value === null ? null : `/comparer?ids=${value}`
 }

@@ -16,7 +16,10 @@ export const useCompareStore = defineStore('compare', () => {
   })
 
   const ids = ref<number[]>(parseCompareIds(cookie.value))
-  // Titre et miniature : en mémoire seulement, le cookie ne garde que les identifiants.
+  // Titre et miniature : jamais dans le cookie (identifiants uniquement). Mais `known` est
+  // RENVOYÉ par le store : Pinia ne transmet au navigateur que les refs renvoyées. Sinon le
+  // serveur affiche les titres, le navigateur n'en connaît aucun, refait les appels et
+  // affiche « Produit n° 3 » (review de #62). Pas persisté : il passe seulement du serveur au navigateur.
   const known = ref<Record<number, CompareSummary>>({})
   /** Dernière phrase à annoncer (`aria-live`), lue par la barre. */
   const announcement = ref('')
@@ -85,6 +88,7 @@ export const useCompareStore = defineStore('compare', () => {
 
   return {
     ids,
+    known,
     announcement,
     count,
     isFull,

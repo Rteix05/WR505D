@@ -11,7 +11,7 @@ useAsyncData(
   'compare-bar',
   async () => {
     const ids = compare.unknownIds
-    if (ids.length === 0) return null
+    if (ids.length === 0) return ids
     // allSettled : un produit en échec n'empêche pas d'afficher les autres.
     const results = await Promise.allSettled(
       ids.map((id) =>
@@ -26,7 +26,9 @@ useAsyncData(
     // 404 : cookie ancien ou modifié à la main, l'identifiant ne désigne aucun produit.
     // Une autre erreur (réseau) garde l'identifiant : le produit existe peut-être.
     compare.drop(missingIds)
-    return null
+    // Jamais `null` : Nuxt ne réutilise le résultat transmis par le serveur que s'il n'est pas
+    // nul. Avec `null`, le navigateur relancerait cette fonction au chargement (review de #62).
+    return ids
   },
   { watch: [() => compare.unknownIds] },
 )
