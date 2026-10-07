@@ -22,6 +22,7 @@ Au début d'une session, identifier l'étudiant (`git config user.name` ou lui d
 - Commits Conventional Commits en français (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`), découpés par étape (types et utils, logique, page, tests, docs), jamais un seul gros commit.
 - **Aucune** ligne `Co-Authored-By` Claude ni « Generated with Claude Code », ni dans les commits ni dans les PR.
 - Commit, push et PR uniquement quand l'étudiant le demande.
+- **Seul Rafael (`Rteix05`) merge**, pour éviter les conflits : il choisit l'ordre des merges et résout les conflits. Si l'étudiant n'est pas Rafael, ne jamais merger une PR (ni bouton « Merge », ni `gh pr merge`), et le lui rappeler s'il le demande : il approuve ou relit, puis prévient Rafael. Si GitHub signale un conflit sur sa PR, ne pas le résoudre seul : prévenir Rafael, qui le résout ou dit quoi faire.
 
 ## Guide GitFlow pas à pas
 
@@ -101,6 +102,8 @@ Puis répondre sous chaque commentaire (« Corrigé dans <commit> » ou l'explic
 
 ### 6. « This branch has conflicts »
 
+**Seul Rafael merge et résout les conflits** : si tu n'es pas Rafael, préviens-le et attends ses consignes. Les commandes ci-dessous sont celles qu'il utilise (ou qu'il te demandera de lancer).
+
 `develop` a changé pendant qu'on travaillait :
 
 ```bash
@@ -119,7 +122,7 @@ Conflit fréquent : `docs/ai-usage/<prenom>.md`, quand deux branches ajoutent un
 
 ### 7. Après le merge
 
-Sur GitHub : « Create a merge commit » (seule option autorisée), puis « Delete branch ». En local :
+**Le merge est fait par Rafael uniquement** : quand ta PR est approuvée et la CI verte, préviens-le, ne clique pas sur « Merge ». Il fait « Create a merge commit » (seule option autorisée), puis « Delete branch ». Ensuite, en local :
 
 ```bash
 git switch develop
@@ -156,7 +159,7 @@ git commit -m "chore: version X.Y.Z et CHANGELOG"
 git push -u origin release/vX.Y.Z
 ```
 
-**2. PR `release/vX.Y.Z` → `main`**, titre `release: vX.Y.Z`, corps = la section du CHANGELOG. CI verte + 1 approbation, puis « Create a merge commit ». **Ne pas supprimer la branche** : elle sert à l'étape 4.
+**2. PR `release/vX.Y.Z` → `main`**, titre `release: vX.Y.Z`, corps = la section du CHANGELOG. CI verte + 1 approbation, puis **Rafael** fait « Create a merge commit ». **Ne pas supprimer la branche** : elle sert à l'étape 4.
 
 **3. Tag annoté et GitHub Release** sur le commit de merge de `main` :
 
@@ -169,7 +172,7 @@ gh release create vX.Y.Z --title "vX.Y.Z" --notes-file <section du CHANGELOG>
 
 Le merge dans `main` déclenche le déploiement de production Vercel : vérifier le site en ligne.
 
-**4. Retour dans `develop`** : PR `release/vX.Y.Z` → `develop` (« Create a merge commit », 1 approbation), puis supprimer la branche de release.
+**4. Retour dans `develop`** : PR `release/vX.Y.Z` → `develop` (1 approbation, merge par Rafael), puis supprimer la branche de release.
 
 ### Hotfix (bug en production)
 
@@ -188,7 +191,7 @@ git push -u origin hotfix/<description>
 
 **Hotfix imposé (semaine 2)** : l'enseignant ouvre une issue `bug-prod` à un moment non annoncé, l'équipe a **24 heures ouvrées**. Assigner l'issue à un membre et la faire relire par un autre. Créer la branche **depuis `main`, jamais depuis `develop`** : le travail en cours de `develop` ne doit pas partir en production, c'est vérifié dans le graphe Git. Le test qui reproduit le bug (non-régression) est obligatoire, et il faut vérifier le site déployé après le merge.
 
-PR `hotfix/<description>` → `main` (label `bug-prod`), merge, tag annoté de la nouvelle version (celle affichée par `npm version patch`, ex. `v0.1.1`) et GitHub Release comme à l'étape 3, puis PR `hotfix/<description>` → `develop` pour ne pas perdre la correction.
+PR `hotfix/<description>` → `main` (label `bug-prod`), merge par Rafael, tag annoté de la nouvelle version (celle affichée par `npm version patch`, ex. `v0.1.1`) et GitHub Release comme à l'étape 3, puis PR `hotfix/<description>` → `develop` pour ne pas perdre la correction.
 
 ### À ne jamais faire
 
@@ -257,7 +260,7 @@ Barème : « parcours complet vert en CI ». Le job « E2E Playwright » de la C
 
 - Vers `develop`, template rempli, `Closes #<n°>`, labels, milestone de la semaine en cours, assignée à l'étudiant.
 - Ne cocher une case de la checklist que si c'est vraiment fait (ex. « Testé au clavier »).
-- `develop` et `main` sont protégées : 1 approbation d'un coéquipier + CI verte, même pour les admins. Merge avec « Create a merge commit », branche supprimée après.
+- `develop` et `main` sont protégées : 1 approbation d'un coéquipier + CI verte, même pour les admins. **Merge par Rafael uniquement** (« Create a merge commit », branche supprimée après) : approuver ou relire, puis le prévenir.
 
 ## Sécurité
 
