@@ -2,7 +2,8 @@
 export const RECENTLY_VIEWED_MAX = 10
 
 /**
- * Ajoute le produit visité en tête de l'historique. S'il y est déjà, il remonte en tête
+ * Ajoute le produit visité en tête de l'historique. `ids` doit venir de
+ * `parseRecentlyViewedCookie` (déjà validé, sans doublon) : un tableau quelconque n'est pas revérifié. S'il y est déjà, il remonte en tête
  * (pas de doublon) ; au-delà de `max`, le plus ancien sort. Ne modifie pas `ids`.
  * Un identifiant invalide (0, négatif, décimal) est ignoré : l'historique reste tel quel.
  */
@@ -33,7 +34,10 @@ export function parseRecentlyViewedCookie(raw: unknown): number[] {
   return ids
 }
 
-/** Historique → valeur du cookie : `"12,5,3"`, le format le plus court (≈ 40 octets pour 10 produits). */
+/**
+ * Historique → valeur du cookie : `"12,5,3"`. Pour 10 produits à 3 chiffres : 39 caractères,
+ * 57 octets une fois écrite par `useCookie` (qui encode les virgules en `%2C`).
+ */
 export function serializeRecentlyViewed(ids: number[]): string {
   return ids.join(',')
 }
