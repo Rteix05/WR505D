@@ -20,6 +20,7 @@ La barre est dans le layout : elle reste visible quand on passe du catalogue à 
 - **Identifiants uniquement** (consigne du sujet) : `1,2,3`. Pas de titre ni d'image. Vérifié par un test et par Playwright.
 - **Une seule ref pour tout le store** : deux `useCookie('compare')` seraient deux refs qui se désynchronisent (même piège que `useAuthCookies`, voir `docs/refresh-token.md`).
 - **Lu au rendu serveur** : la sélection est dans le HTML (boutons déjà « pressés », barre déjà là), sans saut à l'hydratation. Vérifié avec JavaScript désactivé.
+- **Sans JavaScript, la sélection s'affiche mais ne se modifie pas.** Les boutons « Comparer » et de retrait sont des `type="button"` : ils ont besoin de JavaScript pour ajouter ou retirer un produit. Le lien de la barre vers `/comparer?ids=…` fonctionne, lui. L'issue ne demande pas la modification sans JavaScript. Alternative écartée : de vrais formulaires (`POST` puis redirection) pour ajouter et retirer sans JavaScript, beaucoup de code pour un cas que le sujet ne demande pas.
 - **Validé à la lecture** (`parseCompareIds`) : un cookie corrompu ou modifié à la main est ignoré, sans erreur. `abc,,-5,1.5,2,2,9,8,7` donne `[2, 9, 8]` (valides gardés dans l'ordre, doublons retirés, 3 au plus), et `[1,` donne `[]`.
 - **`sameSite: lax`, 30 jours, `secure` en production.** Quand la sélection devient vide, le cookie est **supprimé** (`null`) au lieu d'être renvoyé vide à chaque requête.
 - Un seul produit : `useCookie` relit `7` comme un nombre et pas comme un texte. `parseCompareIds` accepte les deux (testé).
@@ -29,7 +30,8 @@ La barre est dans le layout : elle reste visible quand on passe du catalogue à 
 La barre affiche un titre et une miniature, que le cookie n'a pas.
 
 - **Au clic** sur une carte ou sur la fiche, on a déjà le produit : le store garde `{ id, title, thumbnail }` en mémoire (`known`). Aucun appel réseau.
-- **Après un rechargement**, il ne reste que les identifiants. La barre recharge ceux dont elle ignore le titre : `GET /products/{id}?select=title,thumbnail`, en parallèle (3 appels au plus, quelques centaines d'octets chacun). `useAsyncData` fait attendre le serveur : la page arrive avec les miniatures, sans « Produit n° 1 » qui clignote. Vérifié sans JavaScript.
+- **`known` est renvoyé par le store** (sans être persisté) : Pinia ne transmet au navigateur que les refs renvoyées. Le serveur charge les titres, ils passent dans l'état transmis, et le navigateur les reprend tels quels, sans refaire d'appel. Voir la section 9.
+- **Après un rechargement**, il ne reste que les identifiants. La barre recharge ceux dont elle ignore le titre : `GET /products/{id}?select=title,thumbnail`, en parallèle (3 appels au plus, quelques centaines d'octets chacun). `useAsyncData` fait attendre le serveur : la page arrive avec les miniatures, sans « Produit n° 1 » qui clignote. Vérifié sans JavaScript, et aucun appel refait par le navigateur (Playwright écoute ses requêtes).
 - **Un identifiant que l'API ne connaît pas (404)** : cookie ancien ou modifié à la main. Il est retiré de la sélection, sans annonce. Réutilise `sortCompareResults` de #47.
 - **Une autre erreur (réseau)** : l'identifiant est gardé (le produit existe peut-être) avec un repli « Produit n° 12 ».
 - À remplacer par `getProductsByIds` quand #45 sera mergée (une seule méthode pour tout le site, voir CLAUDE.md).
@@ -75,11 +77,11 @@ Le dernier texte est celui de l'issue, mot pour mot, vérifié par un test unita
 Automatiques :
 
 - `tests/unit/compareSelection.spec.ts` (8 tests) : libellé « Comparer (2/3) », les trois phrases annoncées (dont le texte imposé), noms accessibles, lien vers `/comparer?ids=…`.
-- `tests/nuxt/compareStore.spec.ts` (14 tests, environnement Nuxt, `useCookie` remplacé par un stockage en mémoire) : départ vide, ajout et retrait, **4ᵉ refusé sans changer le cookie**, retirer reste possible plein, cookie supprimé à la fin, persistance entre deux visites, cookie corrompu, un identifiant seul, titres jamais dans le cookie, identifiants sans titre puis rechargés, identifiant 404 retiré, options du cookie (`lax`, 30 jours).
+- `tests/nuxt/compareStore.spec.ts` (15 tests, environnement Nuxt, `useCookie` remplacé par un stockage en mémoire) : départ vide, ajout et retrait, **4ᵉ refusé sans changer le cookie**, retirer reste possible plein, cookie supprimé à la fin, persistance entre deux visites, cookie corrompu, un identifiant seul, titres jamais dans le cookie, identifiants sans titre puis rechargés, identifiant 404 retiré, options du cookie (`lax`, 30 jours).
 
 Pourquoi simuler `useCookie` : le cookie est `secure`, un navigateur de test en `http` ne le renvoie pas, et le test lirait un cookie vide.
 
-De bout en bout, `e2e/comparateur.spec.ts` (Playwright, build de production, 9 tests) :
+De bout en bout, `e2e/comparateur.spec.ts` (Playwright, build de production, 10 tests) :
 
 - ajout, retrait depuis la barre et depuis la carte, annonce, cookie en identifiants ;
 - 4ᵉ refusé et annoncé, bouton non désactivé, une place libérée après un retrait ;
@@ -87,7 +89,8 @@ De bout en bout, `e2e/comparateur.spec.ts` (Playwright, build de production, 9 t
 - navigation fiche produit → catalogue → `/comparer?ids=1,2` ;
 - clavier : Entrée et Espace sur « Comparer », retrait au clavier, focus qui reste dans la barre ;
 - cookie corrompu (`abc,,-5,1.5`) ; identifiant 9999 retiré ;
-- sans JavaScript : boutons pressés, barre, miniatures déjà dans le HTML du serveur ;
+- sans JavaScript : boutons pressés, barre, miniatures déjà dans le HTML du serveur (en lecture seule, voir section 2) ;
+- après un rechargement : titres déjà connus du navigateur, **aucun appel API refait par le navigateur** (voir section 9) ;
 - axe-core avec des produits sélectionnés et la barre affichée.
 
 Piège rencontré avec axe : il signalait un contraste insuffisant sur le bouton cliqué en dernier. Il analysait la page en plein fondu de 150 ms, avec une couleur intermédiaire qui n'existe plus ensuite. Le test passe en mouvement réduit (que le composant respecte déjà) : c'est un artefact de mesure, pas un défaut du bouton.
@@ -96,3 +99,17 @@ Piège rencontré avec axe : il signalait un contraste insuffisant sur le bouton
 
 - Remplacer les appels `select=title,thumbnail` par `getProductsByIds` dès que #45 est mergée.
 - Page `/comparer` (#47) : elle pourrait proposer la sélection du cookie quand l'URL en contient une autre (`isSameCompareSelection` est prêt).
+
+## 9. Suites de la review de #62 (Rafael)
+
+**Bloquant : les titres n'arrivaient pas au navigateur.** `known` n'était pas dans le `return` du store, or Pinia ne transmet au navigateur que les refs renvoyées. Le serveur affichait donc les titres, mais le navigateur partait d'un `known` vide : il affichait « Produit n° 3 » sans miniature (le HTML du serveur et celui du navigateur ne correspondaient plus), et il refaisait les appels déjà faits par le serveur. Deuxième cause : `useAsyncData` renvoyait `null`, or Nuxt ne réutilise le résultat transmis que s'il n'est pas nul, donc la fonction se relançait dans le navigateur.
+
+Corrigé en deux endroits : `known` est renvoyé par le store (sans être persisté), et la fonction de la barre renvoie la liste des identifiants chargés, jamais `null`.
+
+Pourquoi le test de rechargement existant ne l'a pas vu : il vérifiait que les titres finissaient par apparaître, et ils reviennent bien, après le deuxième appel. Il ne regardait ni le clignotement ni les appels du navigateur. Nouveau test Playwright : il écoute les requêtes du **navigateur** (celles du serveur lui sont invisibles) et exige zéro appel vers l'API, plus aucun « Produit n° » et une miniature présente. **Il échouait avant la correction** (deux appels refaits), et passe après. Un test unitaire vérifie aussi que `known` fait partie de l'état du store.
+
+Non bloquant :
+
+- `compareLink` écrit maintenant `/comparer?ids=${formatCompareIds(ids)}` : une seule règle pour la forme de `?ids=` (celle de #44).
+- La barre appelle encore `$fetch` avec `baseURL` au lieu de `useApi()` : provisoire, à remplacer par `getProductsByIds` quand #45 sera mergée.
+- « Sans JavaScript » : précisé section 2, la sélection s'affiche mais ne se modifie pas.
