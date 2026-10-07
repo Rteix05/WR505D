@@ -1,8 +1,11 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 
-const compared = (page: Page) => page.getByRole('main').getByRole('listitem')
-const status = (page: Page) => page.getByRole('main').getByRole('status')
+// Un produit comparé = un en-tête de colonne du tableau (#48).
+const compared = (page: Page) => page.getByRole('main').getByRole('columnheader')
+// La zone de statut de la page (copie du lien) est la première du <main> : le tableau (#48)
+// a la sienne, plus bas, pour annoncer les lignes masquées.
+const status = (page: Page) => page.getByRole('main').getByRole('status').first()
 
 /**
  * Attend que Vue ait hydraté la page : avant, le HTML du serveur est affiché mais les boutons
