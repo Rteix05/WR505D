@@ -76,34 +76,34 @@ function onClear(): void {
   min-width: 0;
   padding: 0.5rem 0.75rem;
   font: inherit;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
 }
 .promo__controls input[aria-invalid='true'] {
-  border-color: #b91c1c;
+  border-color: var(--color-danger);
 }
 .promo__apply {
   padding: 0.5rem 1rem;
   font: inherit;
   font-weight: 600;
-  color: #fff;
-  background: #1f2937;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 .promo__messages p {
   margin: 0;
   font-size: 0.875rem;
-  color: #4b5563;
+  color: var(--color-text-muted);
 }
 .promo__messages .promo__error {
-  color: #b91c1c;
+  color: var(--color-danger);
 }
 .promo__applied {
   margin: 0;
   font-size: 0.875rem;
-  color: #166534;
+  color: var(--color-success);
 }
 .promo__clear {
   font: inherit;
@@ -115,7 +115,7 @@ function onClear(): void {
 }
 button:focus-visible,
 input:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 </style>

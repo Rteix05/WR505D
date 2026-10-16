@@ -168,12 +168,13 @@ function onSubmit(): void {
   gap: 0.25rem;
 }
 .toolbar__field select {
+  min-height: var(--touch-target);
   min-width: 12rem;
   padding: 0.5rem 0.75rem;
   font: inherit;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
-  background: #fff;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
 }
 .toolbar__price {
   display: flex;
@@ -189,19 +190,20 @@ function onSubmit(): void {
   font-weight: 600;
 }
 .toolbar__field input {
+  min-height: var(--touch-target);
   width: 8rem;
   padding: 0.5rem 0.75rem;
   font: inherit;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
 }
 .toolbar__field input[aria-invalid='true'] {
-  border-color: #b91c1c;
+  border-color: var(--color-danger);
 }
 .toolbar__error {
   max-width: 16rem;
   margin: 0;
-  color: #b91c1c;
+  color: var(--color-danger);
   font-size: 0.875rem;
 }
 .toolbar__actions {
@@ -210,13 +212,14 @@ function onSubmit(): void {
   gap: 1rem;
 }
 .toolbar__button {
+  min-height: var(--touch-target);
   padding: 0.5rem 1rem;
   font: inherit;
   font-weight: 600;
-  color: #fff;
-  background: #1f2937;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 .toolbar__reset {
@@ -226,7 +229,7 @@ function onSubmit(): void {
 .toolbar__field input:focus-visible,
 .toolbar__button:focus-visible,
 .toolbar__reset:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 </style>

@@ -13,12 +13,12 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
 }
 .skeleton__block {
-  background: #e5e7eb;
-  border-radius: 0.375rem;
+  background: var(--color-border);
+  border-radius: var(--radius-md);
   animation: pulse 1.5s ease-in-out infinite;
 }
 .skeleton__image {
