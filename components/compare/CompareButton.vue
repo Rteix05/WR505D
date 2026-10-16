@@ -55,24 +55,24 @@ const name = computed((): string => compareButtonName(props.product.title))
   padding: 0.5rem 0.875rem;
   font: inherit;
   font-weight: 600;
-  color: #1f2937;
-  background: #fff;
-  border: 2px solid #1f2937;
-  border-radius: 0.375rem;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition:
     background-color 150ms ease-out,
     color 150ms ease-out;
 }
 .compare-button:hover {
-  background: #f3f4f6;
+  background: var(--color-surface-muted);
 }
 .compare-button[aria-pressed='true'] {
-  color: #fff;
-  background: #1f2937;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
 }
 .compare-button:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {

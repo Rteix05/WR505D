@@ -115,17 +115,17 @@ async function onClear(): Promise<void> {
   padding: 0.5rem 0.875rem;
   font: inherit;
   font-weight: 600;
-  color: #1f2937;
-  background: #fff;
-  border: 2px solid #1f2937;
-  border-radius: 0.375rem;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 .recent__clear:hover {
-  background: #f3f4f6;
+  background: var(--color-surface-muted);
 }
 .recent__clear:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 .visually-hidden {

@@ -95,13 +95,13 @@ function onQuantityChange(event: Event): void {
   gap: 0.5rem 1rem;
   align-items: center;
   padding: 1rem 0;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
 }
 .row__image {
   grid-row: span 2;
   object-fit: cover;
-  border-radius: 0.375rem;
-  background: #f3f4f6;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
 }
 .row__title {
   margin: 0;
@@ -111,10 +111,10 @@ function onQuantityChange(event: Event): void {
 .row__discount {
   margin: 0.25rem 0 0;
   font-size: 0.875rem;
-  color: #4b5563;
+  color: var(--color-text-muted);
 }
 .row__discount {
-  color: #166534;
+  color: var(--color-success);
 }
 .row__quantity {
   display: flex;
@@ -126,9 +126,9 @@ function onQuantityChange(event: Event): void {
   height: 2.25rem;
   font: inherit;
   font-size: 1.125rem;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
-  background: #fff;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
   cursor: pointer;
 }
 .row__input {
@@ -136,8 +136,8 @@ function onQuantityChange(event: Event): void {
   height: 2.25rem;
   font: inherit;
   text-align: center;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
 }
 .row__total {
   margin: 0;
@@ -149,7 +149,7 @@ function onQuantityChange(event: Event): void {
   padding: 0.25rem 0.5rem;
   font: inherit;
   font-size: 0.875rem;
-  color: #b91c1c;
+  color: var(--color-danger);
   background: none;
   border: none;
   text-decoration: underline;
@@ -157,7 +157,7 @@ function onQuantityChange(event: Event): void {
 }
 button:focus-visible,
 input:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 .visually-hidden {

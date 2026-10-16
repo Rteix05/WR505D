@@ -79,17 +79,17 @@ function pageLink(page: number): RouteLocationRaw {
 .pagination__link {
   color: inherit;
   text-decoration: none;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
 }
 .pagination__link[aria-current='page'] {
-  color: #fff;
-  background: #1f2937;
-  border-color: #1f2937;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   font-weight: 700;
 }
 .pagination__link:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 .visually-hidden {

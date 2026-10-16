@@ -99,8 +99,8 @@ async function onRemove(id: number): Promise<void> {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1.5rem;
-  background: #fff;
-  border-top: 2px solid #1f2937;
+  background: var(--color-surface);
+  border-top: 2px solid var(--color-primary);
   box-shadow: 0 -2px 8px rgb(0 0 0 / 12%);
 }
 .compare-bar__items {
@@ -122,8 +122,8 @@ async function onRemove(id: number): Promise<void> {
   width: 3rem;
   height: 3rem;
   object-fit: contain;
-  background: #f3f4f6;
-  border-radius: 0.375rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-md);
 }
 .compare-bar__title {
   overflow: hidden;
@@ -140,14 +140,14 @@ async function onRemove(id: number): Promise<void> {
   width: 2.75rem;
   height: 2.75rem;
   padding: 0;
-  color: #1f2937;
+  color: var(--color-primary);
   background: transparent;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 .compare-bar__remove:hover {
-  background: #f3f4f6;
+  background: var(--color-surface-muted);
 }
 .compare-bar__link {
   display: inline-flex;
@@ -155,14 +155,14 @@ async function onRemove(id: number): Promise<void> {
   min-height: 2.75rem;
   padding: 0.5rem 1rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-on-primary);
   text-decoration: none;
-  background: #1f2937;
-  border-radius: 0.375rem;
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
 }
 .compare-bar__remove:focus-visible,
 .compare-bar__link:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 /* Petit écran : barre compacte (miniatures sur une ligne, lien pleine largeur). Les titres ne

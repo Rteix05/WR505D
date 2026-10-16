@@ -132,6 +132,10 @@ Logique pure dans `utils/recentlyViewed.ts` : `pushRecentlyViewed` (produit visi
 
 Bouton « Comparer » (bascule `aria-pressed`) sur chaque carte et sur la fiche produit, 3 produits maximum, barre « Comparer (2/3) » visible pendant la navigation, sélection dans le cookie `compare` (identifiants uniquement, lu dès le rendu serveur, validé à la lecture). Choix détaillés dans [docs/comparateur-selection.md](docs/comparateur-selection.md).
 
+### Design
+
+Socle visuel dans `assets/css/main.css` : couleurs, typographie, espacements et arrondis en variables CSS, les composants n'écrivent plus de couleur. En-tête collant et pied de page, accueil (recherche, avantages tirés des vraies règles de la boutique, catégories, produits les mieux notés), cartes, fiche, panier, connexion. Contrastes vérifiés (AA), mobile 375 px sans débordement, mouvement réduit respecté. Choix, contrastes calculés et écarts justifiés dans [docs/design.md](docs/design.md).
+
 ### Panier
 
 Store Pinia `cart` persisté dans un cookie (présent dès le rendu serveur, moins de 4 Ko), limite de stock expliquée à l'utilisateur, récapitulatif calculé par `computeCart`. Choix techniques (format du cookie, validation, stock) dans [docs/panier.md](docs/panier.md).

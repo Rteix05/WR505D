@@ -99,24 +99,26 @@ const hiddenFields = computed(() =>
   flex: 1;
   min-width: 0;
   max-width: 32rem;
+  min-height: var(--touch-target);
   padding: 0.5rem 0.75rem;
   font: inherit;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
 }
 .search__button {
+  min-height: var(--touch-target);
   padding: 0.5rem 1rem;
   font: inherit;
   font-weight: 600;
-  color: #fff;
-  background: #1f2937;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 .search__input:focus-visible,
 .search__button:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 </style>

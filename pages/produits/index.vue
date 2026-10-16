@@ -161,8 +161,10 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
     <!-- Toujours présente : une zone de statut n'est annoncée que si elle existait déjà. -->
     <p class="catalogue__status" role="status">{{ statusMessage }}</p>
 
-    <CatalogSearch :filters="filters" @search="applySearch" />
-    <CatalogToolbar :filters="filters" :categories="categories" @apply="applyFilters" />
+    <div class="catalogue__filters">
+      <CatalogSearch :filters="filters" @search="applySearch" />
+      <CatalogToolbar :filters="filters" :categories="categories" @apply="applyFilters" />
+    </div>
 
     <div v-if="error && !loading" class="catalogue__message" role="alert">
       <p>Impossible de charger les produits. Vérifiez votre connexion puis réessayez.</p>
@@ -216,40 +218,63 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
 </template>
 
 <style scoped>
+.catalogue__title {
+  margin: 0 0 var(--space-1);
+}
 .catalogue__title:focus {
   outline: none;
 }
 .catalogue__status {
-  color: #4b5563;
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
+}
+/* Recherche et filtres dans un seul panneau, séparé de la liste. */
+.catalogue__filters {
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .catalogue__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .catalogue__message {
-  padding: 2rem;
+  padding: var(--space-6);
   text-align: center;
-  border: 1px dashed #9ca3af;
-  border-radius: 0.5rem;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
 }
 .catalogue__button {
-  display: inline-block;
-  padding: 0.625rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-4);
   font: inherit;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-on-primary);
   text-decoration: none;
-  background: #1f2937;
-  border: none;
-  border-radius: 0.375rem;
   cursor: pointer;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
 }
-.catalogue__button:focus-visible {
-  outline: 3px solid #2563eb;
-  outline-offset: 2px;
+.catalogue__button:hover {
+  color: var(--color-on-primary);
+  background: var(--color-primary-hover);
+}
+
+@media (min-width: 40rem) {
+  .catalogue__grid {
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: var(--space-4);
+  }
 }
 </style>
