@@ -17,7 +17,9 @@ const { $authFetch } = useNuxtApp()
 const auth = useAuthStore()
 const { user } = storeToRefs(auth)
 const cart = useCartStore()
-const { productFor } = await useCartProducts()
+// Prix et stock relus auprès de l'API, comme sur /panier : un changement doit se voir AVANT de
+// payer, pas après (suite à la review de #70).
+const { productFor, syncMessages } = await useCartProducts()
 
 const LABELS: Record<CheckoutField, string> = {
   fullName: 'Nom et prénom',
@@ -100,6 +102,13 @@ async function onSubmit(): Promise<void> {
 
     <div v-else class="checkout__layout">
       <div>
+        <ul
+          v-if="syncMessages.length"
+          class="checkout__notices"
+          aria-label="Changements dans votre panier"
+        >
+          <li v-for="message in syncMessages" :key="message">{{ message }}</li>
+        </ul>
         <!-- Toujours présente (même vide) : un lecteur d'écran n'annonce une zone role="alert" que si elle existait déjà. -->
         <p class="checkout__alert" :class="{ 'checkout__alert--visible': formError }" role="alert">
           {{ formError }}
@@ -139,7 +148,7 @@ async function onSubmit(): Promise<void> {
 
           <button
             type="submit"
-            class="checkout__submit"
+            class="btn checkout__submit"
             :disabled="pending"
             :aria-busy="pending"
             aria-describedby="payment-notice"
@@ -168,7 +177,7 @@ async function onSubmit(): Promise<void> {
 <style scoped>
 .checkout__layout {
   display: grid;
-  gap: 2rem;
+  gap: var(--space-6);
 }
 @media (min-width: 768px) {
   .checkout__layout {
@@ -180,63 +189,64 @@ async function onSubmit(): Promise<void> {
   margin: 0;
 }
 .checkout__alert--visible {
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid #b91c1c;
-  border-radius: 0.375rem;
-  color: #b91c1c;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  color: var(--color-danger);
+}
+.checkout__notices {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-6);
+  color: var(--color-warning-text);
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-md);
 }
 .checkout__form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-5);
 }
 .checkout__fieldset {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-4);
   margin: 0;
-  padding: 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 .checkout__fieldset legend {
-  padding: 0 0.25rem;
+  padding: 0 var(--space-1);
   font-weight: 600;
+  color: var(--color-heading);
 }
 .checkout__hint,
 .checkout__notice {
   margin: 0;
-  color: #374151;
+  color: var(--color-text-muted);
 }
 .checkout__field {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 .checkout__field input {
-  padding: 0.5rem 0.75rem;
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-3);
   font: inherit;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
 }
 .checkout__field input[aria-invalid='true'] {
-  border-color: #b91c1c;
+  border-color: var(--color-danger);
 }
 .checkout__error {
   margin: 0;
-  color: #b91c1c;
+  color: var(--color-danger);
   font-size: 0.875rem;
-}
-.checkout__submit {
-  padding: 0.75rem 1rem;
-  font: inherit;
-  font-weight: 600;
-  color: #fff;
-  background: #1f2937;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
 }
 .checkout__submit:disabled {
   opacity: 0.7;
@@ -245,18 +255,20 @@ async function onSubmit(): Promise<void> {
 .checkout__side {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-5);
+}
+.checkout__items {
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 .checkout__items h2 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
   font-size: 1.125rem;
 }
 .checkout__items ul {
-  margin: 0 0 0.5rem;
-  padding-left: 1.25rem;
-}
-:focus-visible {
-  outline: 3px solid #2563eb;
-  outline-offset: 2px;
+  margin: 0 0 var(--space-2);
+  padding-left: var(--space-5);
 }
 </style>
