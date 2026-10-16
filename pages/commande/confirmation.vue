@@ -12,11 +12,11 @@ function notFound(): never {
 }
 
 // Le numéro vient de l'URL : la page reste affichée après un rechargement. La commande étant
-// simulée (DummyJSON n'enregistre rien), il n'y a rien d'autre à relire ni à protéger.
+// simulée (DummyJSON n'enregistre rien et répond toujours 209), il n'y a rien à relire ni à protéger.
 const orderNumber = parseOrderNumber(route.query.numero) ?? notFound()
 
 useSeoMeta({
-  title: `Commande n° ${orderNumber} confirmée`,
+  title: `Commande n° ${orderNumber} simulée`,
   description: 'Confirmation de votre commande ChampaShop (paiement simulé).',
   robots: 'noindex, nofollow',
 })
@@ -26,9 +26,12 @@ useSeoMeta({
   <section class="confirmation" aria-labelledby="confirmation-title">
     <h1 id="confirmation-title">Merci pour votre commande</h1>
     <p class="confirmation__number">
-      Commande n° <strong>{{ orderNumber }}</strong> enregistrée.
+      Commande n° <strong>{{ orderNumber }}</strong> simulée.
     </p>
-    <p>Paiement simulé : rien n'a été débité. Votre panier a été vidé.</p>
+    <p>
+      Rien n'a été débité ni enregistré : DummyJSON simule la commande et renvoie toujours le même
+      numéro. Votre panier a été vidé.
+    </p>
     <NuxtLink to="/produits">Continuer mes achats</NuxtLink>
   </section>
 </template>
