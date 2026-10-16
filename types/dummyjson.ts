@@ -127,6 +127,32 @@ export interface AuthUser {
   image: string
 }
 
+// --- Paniers -----------------------------------------------------------------
+
+/**
+ * Réponse de POST /carts/add (commande simulée, #65). DummyJSON ne l'enregistre pas vraiment :
+ * l'`id` sert de numéro de commande. Ses montants, en euros, appliquent les remises DummyJSON
+ * et pas nos promotions : on affiche toujours notre total (`computeCart`), jamais celui-ci.
+ */
+export interface CartAddResponse {
+  id: number
+  userId: number
+  total: number
+  discountedTotal: number
+  totalProducts: number
+  totalQuantity: number
+  products: {
+    id: number
+    title: string
+    price: number
+    quantity: number
+    total: number
+    discountPercentage: number
+    discountedPrice: number
+    thumbnail: string
+  }[]
+}
+
 // --- Erreurs -----------------------------------------------------------------
 
 /** Réponse d'erreur de l'API, ex. { "message": "Product with id '99999' not found" }. */

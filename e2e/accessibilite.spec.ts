@@ -17,6 +17,7 @@ const PAGES = [
   '/produits/9',
   '/produits/117',
   '/produits/99999',
+  '/commande/confirmation?numero=42',
   '/nexiste-pas',
   '/comparer?ids=1,2,3',
   '/comparer?ids=1',

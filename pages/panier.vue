@@ -77,6 +77,8 @@ function onRemove(productId: number): void {
           :summary="cart.summary"
           :free-shipping-remaining-cents="shippingRemaining"
         />
+        <!-- Un lien et pas un bouton : il mène à une page, et fonctionne sans JavaScript (#65). -->
+        <NuxtLink to="/commande" class="btn cart__checkout">Valider ma commande</NuxtLink>
       </div>
     </div>
   </section>
@@ -125,5 +127,8 @@ function onRemove(productId: number): void {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+.cart__checkout {
+  width: 100%;
 }
 </style>
