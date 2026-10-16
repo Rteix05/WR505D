@@ -144,6 +144,10 @@ DummyJSON n'a aucun paramètre de prix, et filtrer la page de 12 produits reçue
 
 Alternatives écartées (enchaîner les pages de l'API, route serveur avec cache) et mesures dans [docs/filtre-prix.md](docs/filtre-prix.md).
 
+### Accessibilité
+
+Tunnel d'achat complet testé **au clavier seul** (`e2e/tunnel-clavier.spec.ts`) : accueil, tri, fiche, ajout au panier, quantité, code promo ; le test échoue si un élément n'est pas atteignable par tabulation. Lighthouse accessibilité à 100 sur l'accueil, le catalogue, la fiche, le panier, la connexion, le compte et le comparateur ; axe-core (WCAG 2.1 AA) sur chaque page en CI. Détails dans [docs/accessibilite.md](docs/accessibilite.md).
+
 ## Conventions Git (GitFlow)
 
 | Branche               | Créée depuis | Mergée dans        | Règle                                                          |

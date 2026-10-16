@@ -230,7 +230,8 @@ PR `hotfix/<description>` → `main` (label `bug-prod`), merge par Rafael, tag a
 Barème : « parcours complet vert en CI ». Le job « E2E Playwright » de la CI lance tous les fichiers de `e2e/` sur le build de production.
 
 - Lancer en local : `npx playwright install chromium` (une seule fois), puis `npm run test:e2e`. Le build est refait automatiquement ; rapport HTML dans `playwright-report/` (`npx playwright show-report`).
-- Un fichier par fonctionnalité : `e2e/<fonctionnalite>.spec.ts` (existants : `catalogue`, `connexion`, `filtres`, `compte`, `produit`, `accessibilite`).
+- Un fichier par fonctionnalité : `e2e/<fonctionnalite>.spec.ts` (existants : `catalogue`, `connexion`, `filtres`, `compte`, `produit`, `accessibilite`, `tunnel-clavier`…).
+- Port 3100 déjà pris par une autre application : `E2E_PORT=3200 npm run test:e2e`, sinon Playwright réutilise ce serveur et teste la mauvaise application.
 - Trouver les éléments comme un utilisateur : `getByRole`, `getByLabel`, `getByText`, jamais par classe CSS. Un test qui ne trouve pas un bouton par son rôle signale souvent un problème d'accessibilité.
 - `{ exact: true }` quand un nom en contient un autre (« Page 1 » / « Page 17 ») ; restreindre au `<main>` pour `role="alert"` (Nuxt en ajoute un pour annoncer les changements de page).
 - Couvrir : le parcours normal, le clavier (`focus()` + `keyboard.press('Enter')`), le bouton retour (`page.goBack()`), une URL invalide, et le rendu sans JavaScript (`test.use({ javaScriptEnabled: false })`).
