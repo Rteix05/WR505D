@@ -149,6 +149,27 @@ test.describe('Commande et paiement simulé (#65)', () => {
     await expect(cartLink(page)).toHaveAccessibleName('Panier, 3 articles')
   })
 
+  // Suite à la review de #70 : un prix changé depuis l'ajout se voit AVANT de payer.
+  test('prix changé depuis l’ajout au panier : annoncé sur la page de commande', async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await openCheckout(page)
+    // Le prix change après le passage par /panier (qui resynchronise déjà) : mascara gardé à
+    // 5,00 € dans le cookie, alors que l'API le vend 9,99 €. Seule /commande peut le signaler.
+    const stale = { items: [[1, 1, 500, 'beauty', 99]], promoCode: '' }
+    await context.addCookies([
+      { name: 'cart', value: encodeURIComponent(JSON.stringify(stale)), url: baseURL ?? '' },
+    ])
+    await page.reload()
+
+    await expect(
+      main(page).getByRole('list', { name: 'Changements dans votre panier' }),
+    ).toContainText('Le prix de « Essence Mascara Lash Princess » a changé : 5,00 € → 9,99 €.')
+    await expect(page.getByRole('button', { name: /^Payer 14,89 €/ })).toBeVisible()
+  })
+
   test('aucune violation d’accessibilité sur la commande et la confirmation', async ({ page }) => {
     await openCheckout(page)
     const tags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
@@ -176,7 +197,7 @@ test.describe('Confirmation de commande', () => {
     test('la confirmation est rendue par le serveur', async ({ page }) => {
       await page.goto('/commande/confirmation?numero=42')
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Merci pour votre commande')
-      await expect(page.getByRole('main')).toContainText('Commande n° 42 enregistrée.')
+      await expect(page.getByRole('main')).toContainText('Commande n° 42 simulée.')
     })
 
     test('le lien « Valider ma commande » mène à la connexion', async ({
