@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
+  // Socle visuel : couleurs, typographie, espacements (voir docs/design.md).
+  css: ['~/assets/css/main.css'],
+
   modules: [
     '@pinia/nuxt',
     // Persistance des stores (séance 7). Le paquet cité en cours, @pinia-plugin-persistedstate/nuxt,

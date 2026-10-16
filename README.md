@@ -120,13 +120,21 @@ Page, recherche, catégorie, tri et prix sont dans les query params, lus et écr
 
 `/produits/[id]` : galerie, marque, note, prix, stock (« Plus que X en stock » sous 5, bouton désactivé en rupture), garantie et livraison, ajout au panier. Vraie 404 (statut HTTP compris) pour un identifiant inexistant ou invalide, page d'erreur en français (`error.vue`). Choix détaillés dans [docs/fiche-produit.md](docs/fiche-produit.md).
 
+### Comparateur
+
+`/comparer?ids=1,2,3` : jusqu'à 3 produits, URL source de vérité, lien partageable. Tableau accessible (`<table>`, en-têtes de lignes et de colonnes) : meilleure valeur signalée par un texte (« Meilleur prix »), option « Afficher uniquement les différences », défilement horizontal avec première colonne figée sur mobile. Détails dans [docs/comparateur.md](docs/comparateur.md).
+
 ### Produits vus récemment
 
-Logique pure dans `utils/recentlyViewed.ts` : `pushRecentlyViewed` (produit visité en tête, sans doublon, 10 maximum) et `parseRecentlyViewedCookie` (cookie `recently_viewed` validé, ne lève jamais d'erreur). Choix et cas limites dans [docs/vus-recemment.md](docs/vus-recemment.md).
+Logique pure dans `utils/recentlyViewed.ts` : `pushRecentlyViewed` (produit visité en tête, sans doublon, 10 maximum) et `parseRecentlyViewedCookie` (cookie `recently_viewed` validé, ne lève jamais d'erreur). Affichage sur l'accueil et en bas de la fiche (sans le produit courant), bouton « Effacer l'historique », cookie `recently_viewed` (identifiants uniquement, 30 jours, lu dès le rendu serveur, un cookie corrompu est réinitialisé), produits chargés avec `getProductsByIds` et `select`. Choix, stratégie de chargement chiffrée et cas limites dans [docs/vus-recemment.md](docs/vus-recemment.md).
 
 ### Comparateur : sélection
 
 Bouton « Comparer » (bascule `aria-pressed`) sur chaque carte et sur la fiche produit, 3 produits maximum, barre « Comparer (2/3) » visible pendant la navigation, sélection dans le cookie `compare` (identifiants uniquement, lu dès le rendu serveur, validé à la lecture). Choix détaillés dans [docs/comparateur-selection.md](docs/comparateur-selection.md).
+
+### Design
+
+Socle visuel dans `assets/css/main.css` : couleurs, typographie, espacements et arrondis en variables CSS, les composants n'écrivent plus de couleur. En-tête collant et pied de page, accueil (recherche, avantages tirés des vraies règles de la boutique, catégories, produits les mieux notés), cartes, fiche, panier, connexion. Contrastes vérifiés (AA), mobile 375 px sans débordement, mouvement réduit respecté. Choix, contrastes calculés et écarts justifiés dans [docs/design.md](docs/design.md).
 
 ### Panier
 

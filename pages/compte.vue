@@ -46,8 +46,13 @@ useSeoMeta({
 
 <style scoped>
 .account {
-  max-width: 32rem;
-  margin: 0 auto;
+  max-width: 34rem;
+  margin: var(--space-5) auto 0;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .account__profile {
   display: flex;
@@ -58,7 +63,7 @@ useSeoMeta({
 }
 .account__avatar {
   border-radius: 50%;
-  background: #f3f4f6;
+  background: var(--color-surface-muted);
 }
 .account__details {
   margin: 0;
@@ -67,7 +72,7 @@ useSeoMeta({
 }
 .account__details dt {
   font-size: 0.875rem;
-  color: #4b5563;
+  color: var(--color-text-muted);
 }
 .account__details dd {
   margin: 0;
@@ -77,14 +82,14 @@ useSeoMeta({
   padding: 0.625rem 1rem;
   font: inherit;
   font-weight: 600;
-  color: #fff;
-  background: #1f2937;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 :focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 </style>

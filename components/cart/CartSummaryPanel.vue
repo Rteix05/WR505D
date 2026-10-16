@@ -46,8 +46,8 @@ defineProps<{
 <style scoped>
 .summary {
   padding: 1rem;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
 }
 .summary__title {
@@ -70,14 +70,14 @@ defineProps<{
 .summary__reason {
   display: block;
   font-size: 0.8125rem;
-  color: #4b5563;
+  color: var(--color-text-muted);
 }
 .summary__discount {
-  color: #166534;
+  color: var(--color-success);
 }
 .summary__row--total {
   margin-top: 0.25rem;
-  border-top: 1px solid #d1d5db;
+  border-top: 1px solid var(--color-border);
   font-size: 1.125rem;
   font-weight: 700;
 }

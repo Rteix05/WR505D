@@ -1,11 +1,18 @@
 /** Nombre de produits gardés dans l'historique (imposé par le sujet). */
 export const RECENTLY_VIEWED_MAX = 10
 
+/** Nom du cookie de l'historique (imposé par le sujet) : identifiants uniquement. */
+export const RECENTLY_VIEWED_COOKIE = 'recently_viewed'
+
+/** Durée du cookie : 30 jours (imposé par l'issue #50). */
+export const RECENTLY_VIEWED_MAX_AGE_SECONDS = 30 * 24 * 60 * 60
+
 /**
- * Ajoute le produit visité en tête de l'historique. `ids` doit venir de
- * `parseRecentlyViewedCookie` (déjà validé, sans doublon) : un tableau quelconque n'est pas revérifié. S'il y est déjà, il remonte en tête
+ * Ajoute le produit visité en tête de l'historique. S'il y est déjà, il remonte en tête
  * (pas de doublon) ; au-delà de `max`, le plus ancien sort. Ne modifie pas `ids`.
  * Un identifiant invalide (0, négatif, décimal) est ignoré : l'historique reste tel quel.
+ * `ids` doit venir de `parseRecentlyViewedCookie` (déjà validé, sans doublon) : un tableau
+ * quelconque n'est pas revérifié.
  */
 export function pushRecentlyViewed(ids: number[], id: number, max = RECENTLY_VIEWED_MAX): number[] {
   if (!isProductId(id)) return ids.slice(0, Math.max(0, max))
@@ -40,6 +47,18 @@ export function parseRecentlyViewedCookie(raw: unknown): number[] {
  */
 export function serializeRecentlyViewed(ids: number[]): string {
   return ids.join(',')
+}
+
+/**
+ * Le cookie est-il déjà exactement ce que l'application écrirait ? Sinon (valeur illisible,
+ * identifiants invalides ou en double, tableau JSON, plus de 10 identifiants…), le store le
+ * réécrit : un cookie corrompu est donc réinitialisé, pas laissé tel quel à chaque visite.
+ * Un cookie absent est canonique pour un historique vide.
+ */
+export function isCanonicalRecentlyViewed(raw: unknown, ids: number[]): boolean {
+  if (raw === undefined || raw === null) return ids.length === 0
+  if (typeof raw !== 'string' && typeof raw !== 'number') return false
+  return String(raw) === serializeRecentlyViewed(ids)
 }
 
 /** Valeurs brutes à valider une par une, quelle que soit la forme du cookie. */

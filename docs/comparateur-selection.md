@@ -34,7 +34,7 @@ La barre affiche un titre et une miniature, que le cookie n'a pas.
 - **Après un rechargement**, il ne reste que les identifiants. La barre recharge ceux dont elle ignore le titre : `GET /products/{id}?select=title,thumbnail`, en parallèle (3 appels au plus, quelques centaines d'octets chacun). `useAsyncData` fait attendre le serveur : la page arrive avec les miniatures, sans « Produit n° 1 » qui clignote. Vérifié sans JavaScript, et aucun appel refait par le navigateur (Playwright écoute ses requêtes).
 - **Un identifiant que l'API ne connaît pas (404)** : cookie ancien ou modifié à la main. Il est retiré de la sélection, sans annonce. Réutilise `sortCompareResults` de #47.
 - **Une autre erreur (réseau)** : l'identifiant est gardé (le produit existe peut-être) avec un repli « Produit n° 12 ».
-- À remplacer par `getProductsByIds` quand #45 sera mergée (une seule méthode pour tout le site, voir CLAUDE.md).
+- Chargé avec `getProductsByIds` (#45), la même méthode que les vus récemment : les 404 y sont séparés des pannes réseau. (Première version avec `$fetch` directement, remplacée après le merge de #45.)
 
 Alternative rejetée : mettre le titre et l'image dans le cookie. C'est contraire au sujet (identifiants uniquement), et trois produits avec leur image dépasseraient vite les 4 Ko.
 
@@ -97,7 +97,6 @@ Piège rencontré avec axe : il signalait un contraste insuffisant sur le bouton
 
 ## 8. Reste à faire
 
-- Remplacer les appels `select=title,thumbnail` par `getProductsByIds` dès que #45 est mergée.
 - Page `/comparer` (#47) : elle pourrait proposer la sélection du cookie quand l'URL en contient une autre (`isSameCompareSelection` est prêt).
 
 ## 9. Suites de la review de #62 (Rafael)
@@ -111,5 +110,5 @@ Pourquoi le test de rechargement existant ne l'a pas vu : il vérifiait que les 
 Non bloquant :
 
 - `compareLink` écrit maintenant `/comparer?ids=${formatCompareIds(ids)}` : une seule règle pour la forme de `?ids=` (celle de #44).
-- La barre appelle encore `$fetch` avec `baseURL` au lieu de `useApi()` : provisoire, à remplacer par `getProductsByIds` quand #45 sera mergée.
+- La barre utilise maintenant `getProductsByIds` (#45), comme prévu : une seule méthode pour tout le site.
 - « Sans JavaScript » : précisé section 2, la sélection s'affiche mais ne se modifie pas.
