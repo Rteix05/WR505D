@@ -109,7 +109,13 @@ const ROWS: RowDefinition[] = [
     id: 'rating',
     label: 'Note',
     text: (product) => `${formatRating(product.rating)} sur 5`,
-    compare: { value: (product) => product.rating, direction: 'max', bestLabel: 'Meilleure note' },
+    // Comparée à la précision affichée (une décimale), en dixièmes entiers : 2,56 et 2,61
+    // s'affichent tous deux « 2,6 sur 5 », ils doivent être à égalité (review de #64).
+    compare: {
+      value: (product) => Math.round(product.rating * 10),
+      direction: 'max',
+      bestLabel: 'Meilleure note',
+    },
   },
   {
     id: 'availability',
@@ -128,7 +134,11 @@ const ROWS: RowDefinition[] = [
   },
   { id: 'brand', label: 'Marque', text: (product) => product.brand ?? 'Non renseignée' },
   { id: 'category', label: 'Catégorie', text: (product) => categoryLabel(product.category) },
-  { id: 'weight', label: 'Poids', text: (product) => numberFormatter.format(product.weight) },
+  {
+    id: 'weight',
+    label: 'Poids (unité non fournie)',
+    text: (product) => numberFormatter.format(product.weight),
+  },
   {
     id: 'dimensions',
     label: 'Dimensions (l × h × p)',

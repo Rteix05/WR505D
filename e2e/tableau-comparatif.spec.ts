@@ -36,7 +36,7 @@ test.describe('Tableau comparatif', () => {
       'Stock',
       'Marque',
       'Catégorie',
-      'Poids',
+      'Poids (unité non fournie)',
       'Dimensions (l × h × p)',
       'Garantie',
       'Livraison',

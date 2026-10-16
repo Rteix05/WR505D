@@ -91,7 +91,7 @@ describe('buildCompareRows', () => {
       'Stock',
       'Marque',
       'Catégorie',
-      'Poids',
+      'Poids (unité non fournie)',
       'Dimensions (l × h × p)',
       'Garantie',
       'Livraison',
@@ -109,6 +109,23 @@ describe('buildCompareRows', () => {
     for (const id of ['discount', 'availability', 'brand', 'weight', 'warranty']) {
       expect(row(products, id)).toMatchObject({ best: [], bestLabel: null })
     }
+  })
+
+  // Suite à la review de #64 : la note est affichée à une décimale, elle doit être comparée
+  // à la même précision. Produits réels 1 (2,56) et 32 (2,61) : tous deux « 2,6 sur 5 ».
+  it('notes affichées identiques (2,56 et 2,61 → « 2,6 sur 5 ») : égalité, pas de « Meilleure note »', () => {
+    const milk = { ...palette, id: 32, title: 'Milk', rating: 2.61 }
+    const rating = row([mascara, milk], 'rating')
+    expect(rating.cells).toEqual(['2,6 sur 5', '2,6 sur 5'])
+    expect(rating).toMatchObject({ best: [], bestLabel: null })
+  })
+
+  it('note arrondie : 2,56 et 2,61 à égalité, mais 4,64 reste la meilleure', () => {
+    const milk = { ...palette, id: 32, title: 'Milk', rating: 2.61 }
+    expect(row([mascara, milk, powder], 'rating')).toMatchObject({
+      best: [2],
+      bestLabel: 'Meilleure note',
+    })
   })
 
   it('prix égaux : pas de « Meilleur prix »', () => {
