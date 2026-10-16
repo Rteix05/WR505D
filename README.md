@@ -126,7 +126,7 @@ Page, recherche, catégorie, tri et prix sont dans les query params, lus et écr
 
 ### Produits vus récemment
 
-Logique pure dans `utils/recentlyViewed.ts` : `pushRecentlyViewed` (produit visité en tête, sans doublon, 10 maximum) et `parseRecentlyViewedCookie` (cookie `recently_viewed` validé, ne lève jamais d'erreur). Choix et cas limites dans [docs/vus-recemment.md](docs/vus-recemment.md).
+Logique pure dans `utils/recentlyViewed.ts` : `pushRecentlyViewed` (produit visité en tête, sans doublon, 10 maximum) et `parseRecentlyViewedCookie` (cookie `recently_viewed` validé, ne lève jamais d'erreur). Affichage sur l'accueil et en bas de la fiche (sans le produit courant), bouton « Effacer l'historique », cookie `recently_viewed` (identifiants uniquement, 30 jours, lu dès le rendu serveur, un cookie corrompu est réinitialisé), produits chargés avec `getProductsByIds` et `select`. Choix, stratégie de chargement chiffrée et cas limites dans [docs/vus-recemment.md](docs/vus-recemment.md).
 
 ### Comparateur : sélection
 

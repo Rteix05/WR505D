@@ -2,9 +2,15 @@
 import type { Product } from '~/types/dummyjson'
 
 // Seuls les champs affichés : la carte peut recevoir un produit partiel (ségrégation des interfaces).
-const props = defineProps<{
-  product: Pick<Product, 'id' | 'title' | 'price' | 'rating' | 'discountPercentage' | 'thumbnail'>
-}>()
+// `headingLevel` : 2 dans le catalogue (sous le h1), 3 quand la carte est dans une section
+// qui a son propre h2 (ex. « Produits vus récemment »), pour garder une hiérarchie de titres juste.
+const props = withDefaults(
+  defineProps<{
+    product: Pick<Product, 'id' | 'title' | 'price' | 'rating' | 'discountPercentage' | 'thumbnail'>
+    headingLevel?: 2 | 3
+  }>(),
+  { headingLevel: 2 },
+)
 
 const badge = computed((): string | null => discountBadge(props.product.discountPercentage))
 const price = computed((): string => formatCents(toCents(props.product.price)))
@@ -27,10 +33,10 @@ const rating = computed((): string => formatRating(props.product.rating))
       <span class="visually-hidden">Remise de</span>
       {{ badge }}
     </p>
-    <h2 class="card__title">
+    <component :is="`h${headingLevel}`" class="card__title">
       <!-- Le lien couvre toute la carte (::after) mais son nom accessible reste le titre. -->
       <NuxtLink :to="`/produits/${product.id}`" class="card__link">{{ product.title }}</NuxtLink>
-    </h2>
+    </component>
     <p class="card__price">{{ price }}</p>
     <p class="card__rating">
       <span aria-hidden="true">★</span>

@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  RECENTLY_VIEWED_COOKIE,
   RECENTLY_VIEWED_MAX,
+  RECENTLY_VIEWED_MAX_AGE_SECONDS,
+  isCanonicalRecentlyViewed,
   parseRecentlyViewedCookie,
   pushRecentlyViewed,
   serializeRecentlyViewed,
@@ -124,5 +127,49 @@ describe('serializeRecentlyViewed', () => {
 
   it('historique vide : chaîne vide', () => {
     expect(serializeRecentlyViewed([])).toBe('')
+  })
+})
+
+describe('isCanonicalRecentlyViewed : le cookie est-il à réécrire ?', () => {
+  it('cookie absent : canonique pour un historique vide seulement', () => {
+    expect(isCanonicalRecentlyViewed(undefined, [])).toBe(true)
+    expect(isCanonicalRecentlyViewed(null, [])).toBe(true)
+    expect(isCanonicalRecentlyViewed(undefined, [3])).toBe(false)
+  })
+
+  it('format écrit par le site : canonique', () => {
+    expect(isCanonicalRecentlyViewed('12,5,3', [12, 5, 3])).toBe(true)
+  })
+
+  it('un seul produit : useCookie donne un nombre, c’est canonique', () => {
+    expect(isCanonicalRecentlyViewed(12, [12])).toBe(true)
+  })
+
+  // Tous ces cookies sont lisibles (ou pas) mais différents de ce qu'on écrirait : à réinitialiser.
+  it.each([
+    ['texte illisible', 'abc', []],
+    ['identifiants invalides mélangés', '1,abc,2', [1, 2]],
+    ['doublons', '5,5,5', [5]],
+    ['valeur vide', '1,,2', [1, 2]],
+    ['espaces', ' 1, 2 ', [1, 2]],
+    ['plus de 10 identifiants', '1,2,3,4,5,6,7,8,9,10,11,12', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]],
+    ['tableau JSON', [1, 2], [1, 2]],
+    ['JSON invalide', '[1,', []],
+    ['objet', { 0: 1 }, []],
+    ['booléen', true, []],
+    ['ordre différent', '2,1', [1, 2]],
+  ])('%s : à réécrire', (_label, raw, ids) => {
+    expect(isCanonicalRecentlyViewed(raw, ids)).toBe(false)
+  })
+
+  it('texte vide : canonique pour un historique vide', () => {
+    expect(isCanonicalRecentlyViewed('', [])).toBe(true)
+  })
+})
+
+describe('constantes du cookie (imposées par le sujet et l’issue #50)', () => {
+  it('nom `recently_viewed`, 30 jours', () => {
+    expect(RECENTLY_VIEWED_COOKIE).toBe('recently_viewed')
+    expect(RECENTLY_VIEWED_MAX_AGE_SECONDS).toBe(30 * 24 * 60 * 60)
   })
 })

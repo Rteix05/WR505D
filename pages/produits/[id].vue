@@ -31,6 +31,22 @@ const {
 // Une autre erreur (réseau, 500) n'est pas une 404 : on propose de réessayer.
 if (httpStatusOf(error.value) === 404) notFound()
 
+// Fiche existante seulement : une 404 a déjà levé `notFound()` plus haut, et une erreur réseau
+// (produit non chargé) n'ajoute rien. Au rendu serveur comme dans le navigateur : sans effet
+// si le produit est déjà en tête.
+const recentlyViewed = useRecentlyViewedStore()
+if (product.value) {
+  const { price, rating, discountPercentage, thumbnail } = product.value
+  recentlyViewed.visit({
+    id,
+    title: product.value.title,
+    price,
+    rating,
+    discountPercentage,
+    thumbnail,
+  })
+}
+
 const images = computed((): string[] => {
   if (!product.value) return []
   return product.value.images.length > 0 ? product.value.images : [product.value.thumbnail]
@@ -156,6 +172,8 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
         </dl>
       </div>
     </article>
+
+    <ProductRecentlyViewed v-if="product" :exclude-id="id" />
   </div>
 </template>
 
