@@ -1,27 +1,21 @@
 <script setup lang="ts">
-import type { CompareSummary } from '~/types/compare'
-
 const compare = useCompareStore()
-const config = useRuntimeConfig()
+const api = useApi()
 
 // Après un rechargement, le cookie ne donne que des identifiants : titre et miniature sont
-// rechargés (3 appels légers au plus, `select`). Au premier rendu, la barre est déjà dans le HTML.
+// rechargés avec `getProductsByIds` (3 appels légers au plus, `select`, en parallèle).
+// Au premier rendu, la barre est déjà dans le HTML.
 // `onServerPrefetch` de useAsyncData : le serveur attend la réponse avant d'envoyer la page.
 useAsyncData(
   'compare-bar',
   async () => {
     const ids = compare.unknownIds
     if (ids.length === 0) return ids
-    // allSettled : un produit en échec n'empêche pas d'afficher les autres.
-    const results = await Promise.allSettled(
-      ids.map((id) =>
-        $fetch<CompareSummary>(`/products/${id}`, {
-          baseURL: config.public.apiBase,
-          query: { select: 'title,thumbnail' },
-        }),
-      ),
-    )
-    const { products, missingIds } = sortCompareResults(ids, results, httpStatusOf)
+    // Une seule méthode pour tout le site (comparateur, vus récemment, panier) : les 404 sont
+    // séparés des pannes réseau, et un produit en échec n'empêche pas d'afficher les autres.
+    const { products, missingIds } = await api.getProductsByIds(ids, {
+      select: ['title', 'thumbnail'],
+    })
     compare.remember(products)
     // 404 : cookie ancien ou modifié à la main, l'identifiant ne désigne aucun produit.
     // Une autre erreur (réseau) garde l'identifiant : le produit existe peut-être.
