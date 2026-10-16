@@ -132,6 +132,10 @@ Bouton « Comparer » (bascule `aria-pressed`) sur chaque carte et sur la fiche 
 
 Store Pinia `cart` persisté dans un cookie (présent dès le rendu serveur, moins de 4 Ko), limite de stock expliquée à l'utilisateur, récapitulatif calculé par `computeCart`. Choix techniques (format du cookie, validation, stock) dans [docs/panier.md](docs/panier.md).
 
+### Commande et paiement simulé
+
+`/panier` → « Valider ma commande » → `/commande` (connexion demandée : DummyJSON exige un `userId`) : coordonnées pré-remplies avec le profil, validation annoncée champ par champ, paiement simulé **sans aucun champ de carte bancaire**, commande enregistrée par `POST /carts/add`, puis `/commande/confirmation?numero=…` et panier vidé. Le montant payé est celui de notre moteur de promotions, pas celui de DummyJSON. Choix et cas limites dans [docs/commande.md](docs/commande.md).
+
 ### Filtre prix min / max
 
 DummyJSON n'a aucun paramètre de prix, et filtrer la page de 12 produits reçue donnerait des pages vides et un total faux. Stratégie retenue :
