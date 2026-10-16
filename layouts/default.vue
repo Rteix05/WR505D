@@ -35,6 +35,7 @@ const cart = useCartStore()
     <main id="contenu" class="layout__main">
       <slot />
     </main>
+    <CompareBar />
     <footer class="layout__footer">
       <p>© ChampaShop, boutique fictive, projet pédagogique.</p>
     </footer>

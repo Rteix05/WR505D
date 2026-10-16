@@ -132,6 +132,9 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
         <p v-if="inCart > 0" class="product__in-cart">
           Déjà {{ inCart }} dans votre panier. <NuxtLink to="/panier">Voir le panier</NuxtLink>
         </p>
+        <CompareButton
+          :product="{ id: product.id, title: product.title, thumbnail: product.thumbnail }"
+        />
 
         <h2 class="product__subtitle">Description</h2>
         <p>{{ product.description }}</p>

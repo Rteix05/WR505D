@@ -108,4 +108,96 @@ describe('createDummyJsonApi', () => {
       })
     })
   })
+
+  describe('getProductsByIds', () => {
+    /** Faux transport par identifiant : produit trouvé, 404, ou erreur réseau (sans code HTTP). */
+    function fakeCatalogue(delays: Record<number, number> = {}) {
+      const request = vi.fn(async (url: string, _options?: unknown) => {
+        const id = Number(url.split('/').pop())
+        await new Promise((resolve) => setTimeout(resolve, delays[id] ?? 0))
+        if (id === 404) throw Object.assign(new Error('Not Found'), { statusCode: 404 })
+        if (id === 500) throw new TypeError('fetch failed')
+        return { id, title: `Produit ${id}` }
+      })
+      return { request, api: createDummyJsonApi(request as ApiRequest) }
+    }
+
+    it('un appel par identifiant, tous lancés en même temps', async () => {
+      const { request, api } = fakeCatalogue({ 1: 30, 2: 30, 3: 30 })
+      const pending = api.getProductsByIds([1, 2, 3])
+      // Les 3 requêtes sont parties avant que la première ne réponde : pas d'appels en série.
+      expect(request).toHaveBeenCalledTimes(3)
+      await pending
+      expect(request.mock.calls.map(([url]) => url)).toEqual([
+        '/products/1',
+        '/products/2',
+        '/products/3',
+      ])
+    })
+
+    it('garde l’ordre des identifiants, même si les réponses arrivent dans le désordre', async () => {
+      const { api } = fakeCatalogue({ 7: 40, 3: 0, 42: 20 })
+      const result = await api.getProductsByIds([7, 3, 42])
+      expect(result.products.map((product) => product.id)).toEqual([7, 3, 42])
+    })
+
+    it('succès partiel : un 404 et une erreur réseau n’empêchent pas les autres', async () => {
+      const { api } = fakeCatalogue()
+      const result = await api.getProductsByIds([1, 404, 2, 500, 3])
+      expect(result).toEqual({
+        products: [
+          { id: 1, title: 'Produit 1' },
+          { id: 2, title: 'Produit 2' },
+          { id: 3, title: 'Produit 3' },
+        ],
+        // 404 : le produit n'existe pas, on peut le retirer (URL, cookie).
+        missingIds: [404],
+        // Autre échec : il existe peut-être, on le garde et on propose de réessayer.
+        failedIds: [500],
+      })
+    })
+
+    it('tout en échec, ou aucun identifiant : jamais d’exception', async () => {
+      const { request, api } = fakeCatalogue()
+      await expect(api.getProductsByIds([404, 500])).resolves.toEqual({
+        products: [],
+        missingIds: [404],
+        failedIds: [500],
+      })
+      await expect(api.getProductsByIds([])).resolves.toEqual({
+        products: [],
+        missingIds: [],
+        failedIds: [],
+      })
+      expect(request).toHaveBeenCalledTimes(2)
+    })
+
+    it('un identifiant en double ne coûte qu’un appel', async () => {
+      const { request, api } = fakeCatalogue()
+      const result = await api.getProductsByIds([5, 5, 6])
+      expect(request).toHaveBeenCalledTimes(2)
+      expect(result.products.map((product) => product.id)).toEqual([5, 6])
+    })
+
+    it('`select` et `signal` sont transmis à chaque appel', async () => {
+      const { request, api } = fakeCatalogue()
+      const controller = new AbortController()
+      await api.getProductsByIds([1, 2], {
+        select: ['title', 'price', 'thumbnail'],
+        signal: controller.signal,
+      })
+      for (const [, options] of request.mock.calls) {
+        expect(options).toEqual({
+          query: { select: 'title,price,thumbnail' },
+          signal: controller.signal,
+        })
+      }
+    })
+
+    it('sans `select` : produits complets, pas de paramètre `select` envoyé', async () => {
+      const { request, api } = fakeCatalogue()
+      await api.getProductsByIds([1])
+      expect(request).toHaveBeenCalledWith('/products/1', { query: undefined, signal: undefined })
+    })
+  })
 })

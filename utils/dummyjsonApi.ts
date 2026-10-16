@@ -1,5 +1,7 @@
 import type { SortField, SortOrder } from '../types/catalog'
 import type { Category, Product, ProductSummary, ProductsResponse } from '../types/dummyjson'
+import { httpStatusOf } from './auth'
+import { sortCompareResults, type CompareLoadResult } from './compare'
 
 export interface ApiRequestOptions {
   query?: Record<string, string | number>
@@ -36,6 +38,18 @@ export const PRODUCT_SUMMARY_FIELDS = [
   'category',
 ] as const satisfies readonly (keyof ProductSummary)[]
 
+/**
+ * `getProductsByIds` : produits complets sans `select`, réduits aux champs demandés avec.
+ * DummyJSON renvoie toujours `id`, même s'il n'est pas dans `select`.
+ */
+export interface GetProductsByIds {
+  (ids: readonly number[], options?: { signal?: AbortSignal }): Promise<CompareLoadResult<Product>>
+  <K extends keyof Product>(
+    ids: readonly number[],
+    options: { select: readonly K[]; signal?: AbortSignal },
+  ): Promise<CompareLoadResult<Pick<Product, K | 'id'>>>
+}
+
 export interface DummyJsonApi {
   getProducts: (params?: ProductListParams) => Promise<ProductsResponse>
   searchProducts: (q: string, params?: ProductListParams) => Promise<ProductsResponse>
@@ -46,6 +60,7 @@ export interface DummyJsonApi {
     scope: ProductScope,
     params?: Omit<ProductListParams, 'limit' | 'skip'>,
   ) => Promise<ProductsResponse<ProductSummary>>
+  getProductsByIds: GetProductsByIds
 }
 
 /** Paramètres de liste → query DummyJSON, sans les clés non renseignées. */
@@ -67,6 +82,27 @@ export function listQuery(params: ProductListParams = {}): Record<string, string
  * Les routes authentifiées (/auth/me, paniers) passent par `$authFetch`, qui exige un jeton.
  */
 export function createDummyJsonApi(request: ApiRequest): DummyJsonApi {
+  /**
+   * Plusieurs produits par identifiants (comparateur, vus récemment, panier). DummyJSON n'a pas
+   * de route groupée : un appel par produit, tous en parallèle. `allSettled` et pas `all` : un
+   * produit supprimé (404) ou une erreur réseau n'empêche jamais d'afficher les autres.
+   * Résultat dans l'ordre des identifiants, 404 (`missingIds`) séparés des autres échecs
+   * (`failedIds`) : un produit introuvable se retire, une panne réseau se réessaie.
+   * Stratégie et poids mesurés : docs/client-api.md.
+   */
+  async function getProductsByIds(
+    ids: readonly number[],
+    options: { select?: readonly (keyof Product)[]; signal?: AbortSignal } = {},
+  ): Promise<CompareLoadResult<Product>> {
+    // Un identifiant en double ne coûte pas un second appel.
+    const unique = [...new Set(ids)]
+    const query = options.select ? { select: options.select.join(',') } : undefined
+    const results = await Promise.allSettled(
+      unique.map((id) => request<Product>(`/products/${id}`, { query, signal: options.signal })),
+    )
+    return sortCompareResults(unique, results, httpStatusOf)
+  }
+
   return {
     getProducts: (params = {}) =>
       request<ProductsResponse>('/products', { query: listQuery(params), signal: params.signal }),
@@ -108,5 +144,9 @@ export function createDummyJsonApi(request: ApiRequest): DummyJsonApi {
         : '/products'
       return request<ProductsResponse<ProductSummary>>(path, { query, ...options })
     },
+
+    // Avec `select`, l'API ne renvoie que les champs demandés : la surcharge de
+    // `GetProductsByIds` donne alors le bon type (`Pick`) à l'appelant.
+    getProductsByIds: getProductsByIds as GetProductsByIds,
   }
 }
