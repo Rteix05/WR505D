@@ -17,7 +17,7 @@ Résultat : le parcours passe sans aucun blocage (aucune correction de l'applica
 
 ## 2. Audit Lighthouse
 
-Lighthouse 13.5.0, catégorie accessibilité, sur le build de production (`node .output/server/index.mjs`), le 16/10/2026. Panier rempli (2 produits, code `TROYES10`), sélection du comparateur remplie et utilisateur `emilys` connecté, pour auditer les pages dans leur état le plus chargé. `/connexion` est auditée déconnectée (connecté, elle redirige vers l'accueil).
+Lighthouse 13.5.0, catégorie accessibilité, sur le build de production (`node .output/server/index.mjs`), le 16/10/2026, **refait après le merge du design (#71)** : mêmes scores. Panier rempli (2 produits, code `TROYES10`), sélection du comparateur remplie et utilisateur `emilys` connecté, pour auditer les pages dans leur état le plus chargé. `/connexion` est auditée déconnectée (connecté, elle redirige vers l'accueil).
 
 | Page          | URL                   | Score |
 | ------------- | --------------------- | ----- |
@@ -29,7 +29,7 @@ Lighthouse 13.5.0, catégorie accessibilité, sur le build de production (`node 
 | Mon compte    | `/compte`             | 100   |
 | Comparateur   | `/comparer?ids=1,2,3` | 100   |
 
-Les rapports HTML sont joints à la PR, pas commités : ils datent d'un build et seraient vite faux.
+Les rapports HTML sont dans [`docs/lighthouse/`](lighthouse/) (un fichier par page, à ouvrir dans un navigateur), comme l'issue le demande. Ils datent de ce build : à refaire avant une release si l'affichage change (même commande, onglet Lighthouse des DevTools). Suite à la review de #69 (Marwan), ils sont commités plutôt que seulement joints à la PR.
 
 **Pourquoi 100 sans correction** : Lighthouse utilise axe-core, déjà lancé en CI sur chaque page depuis la semaine 1 (`accessibilite.spec.ts`). Les défauts qu'il détecte (contraste, labels, noms accessibles, titres) étaient donc bloqués dès leur apparition.
 
