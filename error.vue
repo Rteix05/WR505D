@@ -47,13 +47,13 @@ useSeoMeta({
   display: inline-block;
   padding: 0.625rem 1rem;
   font-weight: 600;
-  color: #fff;
-  background: #1f2937;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
   text-decoration: none;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-md);
 }
 :focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 </style>

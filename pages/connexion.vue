@@ -109,13 +109,18 @@ async function onSubmit(): Promise<void> {
 
 <style scoped>
 .login {
-  max-width: 24rem;
-  margin: 0 auto;
+  max-width: 26rem;
+  margin: var(--space-5) auto 0;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .login__demo {
   padding: 0.75rem 1rem;
-  background: #f3f4f6;
-  border-radius: 0.375rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-md);
 }
 .login__alert {
   margin: 0;
@@ -123,9 +128,9 @@ async function onSubmit(): Promise<void> {
 .login__alert--visible {
   margin: 1rem 0;
   padding: 0.75rem 1rem;
-  border: 1px solid #b91c1c;
-  border-radius: 0.375rem;
-  color: #b91c1c;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  color: var(--color-danger);
 }
 .login__form {
   display: flex;
@@ -140,25 +145,25 @@ async function onSubmit(): Promise<void> {
 .login__field input {
   padding: 0.5rem 0.75rem;
   font: inherit;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
 }
 .login__field input[aria-invalid='true'] {
-  border-color: #b91c1c;
+  border-color: var(--color-danger);
 }
 .login__error {
   margin: 0;
-  color: #b91c1c;
+  color: var(--color-danger);
   font-size: 0.875rem;
 }
 .login__submit {
   padding: 0.625rem 1rem;
   font: inherit;
   font-weight: 600;
-  color: #fff;
-  background: #1f2937;
+  color: var(--color-on-primary);
+  background: var(--color-primary);
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 .login__submit:disabled {
@@ -166,7 +171,7 @@ async function onSubmit(): Promise<void> {
   cursor: wait;
 }
 :focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 </style>

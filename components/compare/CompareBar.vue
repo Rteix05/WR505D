@@ -1,27 +1,21 @@
 <script setup lang="ts">
-import type { CompareSummary } from '~/types/compare'
-
 const compare = useCompareStore()
-const config = useRuntimeConfig()
+const api = useApi()
 
 // Après un rechargement, le cookie ne donne que des identifiants : titre et miniature sont
-// rechargés (3 appels légers au plus, `select`). Au premier rendu, la barre est déjà dans le HTML.
+// rechargés avec `getProductsByIds` (3 appels légers au plus, `select`, en parallèle).
+// Au premier rendu, la barre est déjà dans le HTML.
 // `onServerPrefetch` de useAsyncData : le serveur attend la réponse avant d'envoyer la page.
 useAsyncData(
   'compare-bar',
   async () => {
     const ids = compare.unknownIds
     if (ids.length === 0) return ids
-    // allSettled : un produit en échec n'empêche pas d'afficher les autres.
-    const results = await Promise.allSettled(
-      ids.map((id) =>
-        $fetch<CompareSummary>(`/products/${id}`, {
-          baseURL: config.public.apiBase,
-          query: { select: 'title,thumbnail' },
-        }),
-      ),
-    )
-    const { products, missingIds } = sortCompareResults(ids, results, httpStatusOf)
+    // Une seule méthode pour tout le site (comparateur, vus récemment, panier) : les 404 sont
+    // séparés des pannes réseau, et un produit en échec n'empêche pas d'afficher les autres.
+    const { products, missingIds } = await api.getProductsByIds(ids, {
+      select: ['title', 'thumbnail'],
+    })
     compare.remember(products)
     // 404 : cookie ancien ou modifié à la main, l'identifiant ne désigne aucun produit.
     // Une autre erreur (réseau) garde l'identifiant : le produit existe peut-être.
@@ -105,8 +99,8 @@ async function onRemove(id: number): Promise<void> {
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1.5rem;
-  background: #fff;
-  border-top: 2px solid #1f2937;
+  background: var(--color-surface);
+  border-top: 2px solid var(--color-primary);
   box-shadow: 0 -2px 8px rgb(0 0 0 / 12%);
 }
 .compare-bar__items {
@@ -128,8 +122,8 @@ async function onRemove(id: number): Promise<void> {
   width: 3rem;
   height: 3rem;
   object-fit: contain;
-  background: #f3f4f6;
-  border-radius: 0.375rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-md);
 }
 .compare-bar__title {
   overflow: hidden;
@@ -146,14 +140,14 @@ async function onRemove(id: number): Promise<void> {
   width: 2.75rem;
   height: 2.75rem;
   padding: 0;
-  color: #1f2937;
+  color: var(--color-primary);
   background: transparent;
-  border: 1px solid #6b7280;
-  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 .compare-bar__remove:hover {
-  background: #f3f4f6;
+  background: var(--color-surface-muted);
 }
 .compare-bar__link {
   display: inline-flex;
@@ -161,14 +155,14 @@ async function onRemove(id: number): Promise<void> {
   min-height: 2.75rem;
   padding: 0.5rem 1rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-on-primary);
   text-decoration: none;
-  background: #1f2937;
-  border-radius: 0.375rem;
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
 }
 .compare-bar__remove:focus-visible,
 .compare-bar__link:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 /* Petit écran : barre compacte (miniatures sur une ligne, lien pleine largeur). Les titres ne

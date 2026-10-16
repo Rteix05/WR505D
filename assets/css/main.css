@@ -1,0 +1,196 @@
+/*
+ * Socle visuel de ChampaShop : tout ce qui touche aux couleurs, à la typographie, aux espacements
+ * et aux arrondis est ici. Les composants utilisent ces variables (jamais de couleur en dur),
+ * donc changer la marque = changer ce fichier.
+ *
+ * Choix (système de design UI/UX Pro Max, schéma « Marketplace ») : vert comme couleur
+ * principale, rose en accent. Deux écarts volontaires :
+ *  - accent #BE185D et pas #EC4899 : avec du texte blanc, #EC4899 ne donne que 3,5:1 (il faut 4,5:1) ;
+ *  - vert principal #147A39 et pas #15803D : ce dernier ne donne que 4,4:1 sur le fond vert pâle
+ *    des liens actifs et des survols (axe-core l'a signalé), #147A39 donne 4,76:1 ;
+ *  - police système et pas Google Fonts : une requête tierce de moins (Lighthouse, LCP), pas de
+ *    saut de texte au chargement, et ça marche hors ligne.
+ * Contrastes vérifiés (WCAG AA, texte normal ≥ 4,5:1) : voir docs/design.md.
+ */
+:root {
+  /* Couleurs */
+  --color-primary: #147a39;
+  --color-primary-hover: #166534;
+  --color-on-primary: #ffffff;
+  --color-accent: #be185d;
+  --color-on-accent: #ffffff;
+  --color-bg: #f0fdf4;
+  --color-surface: #ffffff;
+  --color-surface-muted: #e8f3ea;
+  --color-text: #14231a;
+  --color-text-muted: #4b5563;
+  --color-heading: #14532d;
+  --color-border: #c8dccd;
+  --color-border-strong: #6b7280;
+  --color-danger: #b91c1c;
+  --color-success: #166534;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #d97706;
+  --color-warning-text: #92400e;
+  --color-focus: #2563eb;
+  --color-footer-text: #d1fae5;
+
+  /* Typographie : police système, échelle 14 / 16 / 18 / 20 / 24 / 32 / 48 */
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 2rem;
+  --text-4xl: clamp(2rem, 1.4rem + 2.6vw, 3rem);
+
+  /* Espacements (multiples de 4 px) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* Arrondis et ombres */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.875rem;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgb(20 83 45 / 8%);
+  --shadow-md: 0 4px 14px rgb(20 83 45 / 12%);
+
+  /* Mise en page */
+  --container: 72rem;
+  --touch-target: 2.75rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* En-tête collant : un élément qui reçoit le focus ne doit pas passer dessous (WCAG 2.4.11). */
+  scroll-padding-top: 7.5rem;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+h1,
+h2,
+h3 {
+  color: var(--color-heading);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: var(--text-4xl);
+}
+
+a {
+  color: var(--color-primary);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+img {
+  max-width: 100%;
+}
+
+/* Contour de focus visible partout : repris par tous les composants. */
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Boutons : un seul style de base, les composants n'ajoutent que ce qui leur est propre. */
+.btn {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-on-primary);
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+
+.btn:hover {
+  color: var(--color-on-primary);
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.btn--secondary {
+  color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.btn--secondary:hover {
+  color: var(--color-primary-hover);
+  background: var(--color-surface-muted);
+  border-color: var(--color-primary-hover);
+}
+
+.btn:disabled {
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  background: var(--color-surface-muted);
+  border-color: var(--color-border);
+}
+
+/* Contenu masqué à l'écran mais lu par les lecteurs d'écran. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Largeur et marges communes à l'en-tête, au contenu et au pied de page. */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  padding-inline: var(--space-5);
+  margin-inline: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -57,7 +57,7 @@ const mainAlt = computed((): string =>
   height: auto;
   aspect-ratio: 1;
   object-fit: contain;
-  background: #f3f4f6;
+  background: var(--color-surface-muted);
   border-radius: 0.5rem;
 }
 .gallery__thumbs {
@@ -71,8 +71,8 @@ const mainAlt = computed((): string =>
 .gallery__thumb {
   padding: 0;
   border: 2px solid transparent;
-  border-radius: 0.375rem;
-  background: #f3f4f6;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
   cursor: pointer;
 }
 .gallery__thumb img {
@@ -82,10 +82,10 @@ const mainAlt = computed((): string =>
   object-fit: contain;
 }
 .gallery__thumb[aria-current='true'] {
-  border-color: #1f2937;
+  border-color: var(--color-primary);
 }
 .gallery__thumb:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 </style>

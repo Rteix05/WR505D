@@ -18,6 +18,8 @@ const PAGES = [
   '/produits/99999',
   '/commande/confirmation?numero=42',
   '/nexiste-pas',
+  '/comparer?ids=1,2,3',
+  '/comparer?ids=1',
 ]
 
 for (const path of PAGES) {

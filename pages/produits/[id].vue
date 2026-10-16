@@ -31,6 +31,22 @@ const {
 // Une autre erreur (réseau, 500) n'est pas une 404 : on propose de réessayer.
 if (httpStatusOf(error.value) === 404) notFound()
 
+// Fiche existante seulement : une 404 a déjà levé `notFound()` plus haut, et une erreur réseau
+// (produit non chargé) n'ajoute rien. Au rendu serveur comme dans le navigateur : sans effet
+// si le produit est déjà en tête.
+const recentlyViewed = useRecentlyViewedStore()
+if (product.value) {
+  const { price, rating, discountPercentage, thumbnail } = product.value
+  recentlyViewed.visit({
+    id,
+    title: product.value.title,
+    price,
+    rating,
+    discountPercentage,
+    thumbnail,
+  })
+}
+
 const images = computed((): string[] => {
   if (!product.value) return []
   return product.value.images.length > 0 ? product.value.images : [product.value.thumbnail]
@@ -104,37 +120,42 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
           <span class="product__reviews"> ({{ product.reviews.length }} avis) </span>
         </p>
 
-        <p class="product__price">
-          {{ price }}
-          <span v-if="badge" class="product__badge">
-            <span class="visually-hidden">Remise de</span>
-            {{ badge }}
-          </span>
-        </p>
+        <!-- Encadré d'achat : prix, stock et actions réunis au même endroit. -->
+        <div class="product__buy">
+          <p class="product__price">
+            {{ price }}
+            <span v-if="badge" class="product__badge">
+              <span class="visually-hidden">Remise de</span>
+              {{ badge }}
+            </span>
+          </p>
 
-        <p id="product-stock" class="product__stock" :class="`product__stock--${stock.level}`">
-          {{ stock.label }}
-        </p>
+          <p id="product-stock" class="product__stock" :class="`product__stock--${stock.level}`">
+            {{ stock.label }}
+          </p>
 
-        <!-- Bouton désactivé seulement en rupture (demandé par l'issue) : il l'est dès
-             l'affichage, donc aucun focus n'est perdu. aria-describedby lit le stock avec. -->
-        <button
-          type="button"
-          class="product-page__button"
-          :disabled="stock.level === 'out'"
-          aria-describedby="product-stock"
-          @click="addToCart"
-        >
-          Ajouter au panier
-        </button>
-        <!-- Toujours présente : une zone role="status" n'est annoncée que si elle existait déjà. -->
-        <p class="product__cart-status" role="status">{{ cartMessage }}</p>
-        <p v-if="inCart > 0" class="product__in-cart">
-          Déjà {{ inCart }} dans votre panier. <NuxtLink to="/panier">Voir le panier</NuxtLink>
-        </p>
-        <CompareButton
-          :product="{ id: product.id, title: product.title, thumbnail: product.thumbnail }"
-        />
+          <div class="product__actions">
+            <!-- Bouton désactivé seulement en rupture (demandé par l'issue) : il l'est dès
+                 l'affichage, donc aucun focus n'est perdu. aria-describedby lit le stock avec. -->
+            <button
+              type="button"
+              class="btn product__add"
+              :disabled="stock.level === 'out'"
+              aria-describedby="product-stock"
+              @click="addToCart"
+            >
+              Ajouter au panier
+            </button>
+            <CompareButton
+              :product="{ id: product.id, title: product.title, thumbnail: product.thumbnail }"
+            />
+          </div>
+          <!-- Toujours présente : une zone role="status" n'est annoncée que si elle existait déjà. -->
+          <p class="product__cart-status" role="status">{{ cartMessage }}</p>
+          <p v-if="inCart > 0" class="product__in-cart">
+            Déjà {{ inCart }} dans votre panier. <NuxtLink to="/panier">Voir le panier</NuxtLink>
+          </p>
+        </div>
 
         <h2 class="product__subtitle">Description</h2>
         <p>{{ product.description }}</p>
@@ -156,6 +177,8 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
         </dl>
       </div>
     </article>
+
+    <ProductRecentlyViewed v-if="product" :exclude-id="id" />
   </div>
 </template>
 
@@ -172,7 +195,7 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
 .breadcrumb li + li::before {
   content: '/';
   margin-right: 0.5rem;
-  color: #6b7280;
+  color: var(--color-border-strong);
 }
 .product {
   display: grid;
@@ -191,33 +214,34 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
 }
 .product__brand,
 .product__rating {
-  color: #4b5563;
+  color: var(--color-text-muted);
 }
 .product__price {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--space-3);
   align-items: center;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--color-heading);
 }
 .product__badge {
   padding: 0.125rem 0.5rem;
   font-size: 0.875rem;
-  color: #fff;
-  background: #b91c1c;
+  color: var(--color-on-primary);
+  background: var(--color-danger);
   border-radius: 999px;
 }
 .product__stock {
   font-weight: 600;
 }
 .product__stock--in {
-  color: #166534;
+  color: var(--color-success);
 }
 .product__stock--low {
-  color: #92400e;
+  color: var(--color-warning-text);
 }
 .product__stock--out {
-  color: #b91c1c;
+  color: var(--color-danger);
 }
 .product__subtitle {
   margin: 1rem 0 0;
@@ -230,33 +254,50 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
 }
 .product__details dt {
   font-size: 0.875rem;
-  color: #4b5563;
+  color: var(--color-text-muted);
 }
 .product__details dd {
   margin: 0;
 }
+.product__buy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.product__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+/* Mêmes dimensions pour « Ajouter » et « Comparer » : deux boutons de hauteur égale. */
+.product__actions :deep(.compare-button) {
+  align-self: auto;
+}
 .product-page__button {
   align-self: flex-start;
-  padding: 0.625rem 1rem;
+  min-height: var(--touch-target);
+  padding: var(--space-2) var(--space-4);
   font: inherit;
   font-weight: 600;
-  color: #fff;
-  background: #1f2937;
-  border: none;
-  border-radius: 0.375rem;
+  color: var(--color-on-primary);
   cursor: pointer;
-}
-.product-page__button:disabled {
-  background: #6b7280;
-  cursor: not-allowed;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
 }
 .product-page__error {
   padding: 1rem;
-  border: 1px solid #b91c1c;
-  border-radius: 0.375rem;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
 }
 :focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 .visually-hidden {
