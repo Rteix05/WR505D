@@ -2,10 +2,11 @@
 export const RECENTLY_VIEWED_MAX = 10
 
 /**
- * Ajoute le produit visité en tête de l'historique. `ids` doit venir de
- * `parseRecentlyViewedCookie` (déjà validé, sans doublon) : un tableau quelconque n'est pas revérifié. S'il y est déjà, il remonte en tête
+ * Ajoute le produit visité en tête de l'historique. S'il y est déjà, il remonte en tête
  * (pas de doublon) ; au-delà de `max`, le plus ancien sort. Ne modifie pas `ids`.
  * Un identifiant invalide (0, négatif, décimal) est ignoré : l'historique reste tel quel.
+ * `ids` doit venir de `parseRecentlyViewedCookie` (déjà validé, sans doublon) : un tableau
+ * quelconque n'est pas revérifié.
  */
 export function pushRecentlyViewed(ids: number[], id: number, max = RECENTLY_VIEWED_MAX): number[] {
   if (!isProductId(id)) return ids.slice(0, Math.max(0, max))
