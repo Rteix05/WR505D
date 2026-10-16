@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const PORT = 3100
+// `E2E_PORT` si 3100 est déjà pris : `reuseExistingServer` testerait sinon l'autre application.
+const PORT = Number(process.env.E2E_PORT ?? 3100)
 const isCI = Boolean(process.env.CI)
 
 // Les parcours tournent sur le build de production (comme le site déployé), pas sur le serveur
