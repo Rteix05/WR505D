@@ -13,6 +13,7 @@ const PAGES = [
   '/produits?q=zzzz',
   '/produits?minPrice=10&maxPrice=20',
   '/connexion',
+  '/panier', // vide ; rempli avec un code promo : fin de `tunnel-clavier.spec.ts`
   '/produits/9',
   '/produits/117',
   '/produits/99999',
