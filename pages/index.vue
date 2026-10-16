@@ -15,5 +15,6 @@ useSeoMeta({
   <section>
     <h1>Bienvenue sur ChampaShop</h1>
     <p><NuxtLink to="/produits">Voir tous les produits</NuxtLink></p>
+    <ProductRecentlyViewed />
   </section>
 </template>
